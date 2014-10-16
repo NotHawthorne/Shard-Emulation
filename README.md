@@ -6,7 +6,7 @@ NOTHAWTHORNE'S PREAMBLE
 =======================
 I started The Shard of Entropy as something to work on in my spare time. Releasing it to the public was a good thing, and I got a lot of ideas and fun out of seeing things progress and grow. However, as time went on, it became more work than enjoyment for me. If I don't enjoy what I'm doing, I don't do it anymore. (At least when it comes to my hobbies.)
 On top of this, I refuse to present something I see as shitty. Logging on and getting instagibbed by a Killing Spree Stalker with level 80 poisons? That's shitty. Falling to your death and losing your gear because of Blink? Shitty. If I'm going to be developing something like this, I'm going to make goddamned sure that it's going to be built well, and Shard in its most recent incarnation was many things, but not built well. 
-If you guys want to go ahead and contribute, please do so. I encourage it highly. I will be tweaking and adding things as well, albeit at a slower pace than I was. However, I will not take on the duty of running the server anymore. I love you guys, long live <Solomon Jones>.
+If you guys want to go ahead and contribute, please do so. I encourage it highly. I will be tweaking and adding things as well, albeit at a slower pace than I was. However, I will not take on the duty of running the server anymore. I love you guys, long live <Solomon Jones>!
 
 FAQ
 ===
