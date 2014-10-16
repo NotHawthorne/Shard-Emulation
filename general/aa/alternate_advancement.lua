@@ -253,17 +253,21 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                      -- {"EditBoxName", "ButtonName"}
                     };
             }
-           
             AA.Berserking = {
-                    Height = 250,
-                    Width = 190,
+                    Height = 190,
+                    Width = 220,
                     Buttons = {
                      -- {"ButtonName", "ButtonText", Height, Width, YOffset, XOffset}
-                            {"flurry", "Flurry", 17, 120, 83, 0},
-                            {"vitality", "Vitality", 17, 120, 63, 0},
-                            {"vigor", "Vigor", 17, 120, 43, 0},
-                            {"combat_potency", "Combat Potency", 17, 120, 23, 0},
-                            {"focused_attacks", "Focused Attacks", 17, 120, 3, 0},
+						{"inc_flurry", ">>", 17, 25, 56, 85},
+						{"dec_flurry", "<<", 17, 25, 56, 30},
+						{"inc_vitality", ">>", 17, 25, 36, 85},
+						{"dec_vitality", "<<", 17, 25, 36, 30},
+						{"inc_vigor", ">>", 17, 25, 16, 85},
+						{"dec_vigor", "<<", 17, 25, 16, 30},
+						{"inc_combat_potency", ">>", 17, 25, -4, 85},
+						{"dec_combat_potency", "<<", 17, 25, -4, 30},
+						{"inc_focused_attacks", ">>", 17, 25, -24, 85},
+						{"dec_focused_attacks", "<<", 17, 25, -24, 30},
                     },
                     EditBoxes = {
                      -- {"EditBoxName", "HoverText", Height, Width, YOffset, XOffset}
@@ -271,21 +275,33 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     },
                     TextBoxes = {
                      -- {"TextBoxName", "Text", Height, Width, YOffset, XOffset, TextHeight}
-							{"testing", "Available AA Points: "..points.."", 15, 185, -100, 0, 12}
+							{"testing", "Available AA Points: "..points.."", 15, 185, -67, 0, 12},
+                            {"flurry", "Flurry", 17, 120, 56, -43, 12},
+                            {"vitality", "Vitality", 17, 120, 36, -67, 12},
+                            {"vigor", "Vigor", 17, 120, 16, -54, 12},
+                            {"combat_potency", "Combat Potency", 17, 120, -4, -53, 12},
+                            {"focused_attacks", "Focused Attacks", 17, 120, -24, -46, 12},
+							{"flurry_value", ""..(tonumber(sel_array[1])).."/5", 17, 120, 56, 58.25, 12},
+							{"vitality_value", ""..(tonumber(sel_array[2])).."/3", 17, 120, 36, 58.25, 12},
+							{"vigor_value", ""..(tonumber(sel_array[3])).."/5", 17, 120, 16, 58.25, 12},
+							{"combat_potency_value", ""..(tonumber(sel_array[4])).."/3", 17, 120, -4, 58.25, 12},
+							{"focused_attacks_value", ""..(tonumber(sel_array[5])).."/5", 17, 120, -24, 58.25, 12},
                     },
                     StatusLinks = {
                      -- {"EditBoxName", "ButtonName"}
                     };
             }
-			
 			AA.Companionship = {
-                    Height = 250,
-                    Width = 190,
+                    Height = 190,
+                    Width = 220,
                     Buttons = {
                      -- {"ButtonName", "ButtonText", Height, Width, YOffset, XOffset}
-                            {"ferocity", "Ferocity", 17, 120, 83, 0},
-                            {"frenzy", "Frenzy", 17, 120, 63, 0},
-                            {"kindred_spirits", "Kindred Spirits", 17, 120, 43, 0},
+						{"inc_ferocity", ">>", 17, 25, 56, 85},
+						{"dec_ferocity", "<<", 17, 25, 56, 30},
+						{"inc_frenzy", ">>", 17, 25, 36, 85},
+						{"dec_frenzy", "<<", 17, 25, 36, 30},
+						{"inc_kindred_spirits", ">>", 17, 25, 16, 85},
+						{"dec_kindred_spirits", "<<", 17, 25, 16, 30},
                     },
                     EditBoxes = {
                      -- {"EditBoxName", "HoverText", Height, Width, YOffset, XOffset}
@@ -293,7 +309,13 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     },
                     TextBoxes = {
                      -- {"TextBoxName", "Text", Height, Width, YOffset, XOffset, TextHeight}
-							{"testing", "Available AA Points: "..points.."", 15, 185, -100, 0, 12}
+							{"testing", "Available AA Points: "..points.."", 15, 185, -67, 0, 12},
+                            {"ferocity", "Ferocity", 17, 120, 56, -43, 12},
+                            {"frenzy", "Frenzy", 17, 120, 36, -67, 12},
+                            {"kindred_spirits", "Kindred Spirits", 17, 120, 16, -54, 12},
+							{"ferocity_value", ""..(tonumber(sel_array[1])).."/5", 17, 120, 56, 58.25, 12},
+							{"frenzy_value", ""..(tonumber(sel_array[2])).."/3", 17, 120, 36, 58.25, 12},
+							{"kindred_spirits_value", ""..(tonumber(sel_array[3])).."/5", 17, 120, 16, 58.25, 12},
                     },
                     StatusLinks = {
                      -- {"EditBoxName", "ButtonName"}
@@ -1133,7 +1155,385 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						end
 					end
 				end
-           
+            if(Type == "Berserking") then
+                    if(Button == "inc_daggerspec") then
+						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						spentpoints = 0
+						repeat
+							local pointrow = maxpointsdb:GetUInt32(0)
+							spentpoints = (spentpoints+pointrow)
+						until not maxpointsdb:NextRow()
+						if (spentpoints>=45) then
+							Player:SendBroadcastMessage("You already have 45 Alternate Advancement points allocated!")
+						else
+						if (points<=0) then
+						Player:SendBroadcastMessage("You have no Alternate Advancement points!")
+						else
+						local newvalue = (sel_array[1])+1
+						if (newvalue<=5) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=1")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of Dagger Specialization has been increased to "..newvalue..".")
+							if (newvalue==1) then
+								Player:AddAura(13706, Player)
+							elseif (newvalue==2) then
+								Player:AddAura(13804, Player)
+							elseif (newvalue==3) then
+								Player:AddAura(13805, Player)
+							elseif (newvalue==4) then
+								Player:AddAura(13806, Player)
+							elseif (newvalue==5) then
+								Player:AddAura(13807, Player)
+							end
+							sel_array[1]=(sel_array[1])+1
+							points=(points)-1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill is at its maximum value!")
+						end
+					end
+					end
+                    elseif(Button == "dec_daggerspec") then
+						local newvalue = (sel_array[1])-1
+						if (newvalue>=0) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=1")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of Dagger Specialization has been decreased to "..newvalue..".")
+							if (newvalue==0) then
+								Player:RemoveAura(13706, Player)
+							elseif (newvalue==1) then
+								Player:RemoveAura(13804, Player)
+								Player:AddAura(13706, Player)
+							elseif (newvalue==2) then
+								Player:RemoveAura(13805, Player)
+								Player:AddAura(13804, Player)
+							elseif (newvalue==3) then
+								Player:RemoveAura(13806, Player)
+								Player:AddAura(13805, Player)
+							elseif (newvalue==4) then
+								Player:RemoveAura(13807, Player)
+								Player:AddAura(13806, Player)
+							end
+							sel_array[1]=(sel_array[1])-1
+							points=(points)+1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill as its minimum value!")
+						end
+                    elseif(Button == "inc_precision") then
+						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						spentpoints = 0
+						repeat
+							local pointrow = maxpointsdb:GetUInt32(0)
+							spentpoints = (spentpoints+pointrow)
+						until not maxpointsdb:NextRow()
+						if (spentpoints>=45) then
+							Player:SendBroadcastMessage("You already have 45 Alternate Advancement points allocated!")
+						else
+						if (points<=0) then
+						Player:SendBroadcastMessage("You have no Alternate Advancement points!")
+						else
+						local newvalue = (sel_array[2])+1
+						if (newvalue<=3) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=2")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of Precision has been increased to "..newvalue..".")
+							if (newvalue==1) then
+								Player:AddAura(29590, Player)
+							elseif (newvalue==2) then
+								Player:AddAura(29591, Player)
+							elseif (newvalue==3) then
+								Player:AddAura(29592, Player)
+							end
+							sel_array[2]=(sel_array[2])+1
+							points=(points)-1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill is at its maximum value!")
+						end
+					end
+					end
+                    elseif(Button == "dec_precision") then
+						local newvalue = (sel_array[2])-1
+						if (newvalue>=0) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=2")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of Precision has been decreased to "..newvalue..".")
+							if (newvalue==0) then
+								Player:RemoveAura(29590, Player)
+							elseif (newvalue==1) then
+								Player:RemoveAura(29591, Player)
+								Player:AddAura(29590, Player)
+							elseif (newvalue==2) then
+								Player:RemoveAura(29592, Player)
+								Player:AddAura(29591, Player)
+							end
+							sel_array[2]=(sel_array[2])-1
+							points=(points)+1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill as its minimum value!")
+						end
+                    elseif(Button == "inc_1h_spec") then
+						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						spentpoints = 0
+						repeat
+							local pointrow = maxpointsdb:GetUInt32(0)
+							spentpoints = (spentpoints+pointrow)
+						until not maxpointsdb:NextRow()
+						if (spentpoints>=45) then
+							Player:SendBroadcastMessage("You already have 45 Alternate Advancement points allocated!")
+						else
+						if (points<=0) then
+						Player:SendBroadcastMessage("You have no Alternate Advancement points!")
+						else
+						local newvalue = (sel_array[3])+1
+						if (newvalue<=5) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=3")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of One-Handed Weapon Specialization has been increased to "..newvalue..".")
+							if (newvalue==1) then
+								Player:AddAura(16538, Player)
+							elseif (newvalue==2) then
+								Player:AddAura(16539, Player)
+							elseif (newvalue==3) then
+								Player:AddAura(16540, Player)
+							elseif (newvalue==4) then
+								Player:AddAura(16541, Player)
+							elseif (newvalue==5) then
+								Player:AddAura(16542, Player)
+							end
+							sel_array[3]=(sel_array[3])+1
+							points=(points)-1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill is at its maximum value!")
+						end
+					end
+					end
+                    elseif(Button == "dec_1h_spec") then
+						local newvalue = (sel_array[3])-1
+						if (newvalue>=0) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=3")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of One-Handed Sword Specialization has been decreased to "..newvalue..".")
+							if (newvalue==0) then
+								Player:RemoveAura(16538, Player)
+							elseif (newvalue==1) then
+								Player:RemoveAura(16539, Player)
+								Player:AddAura(16538, Player)
+							elseif (newvalue==2) then
+								Player:RemoveAura(16540, Player)
+								Player:AddAura(16539, Player)
+							elseif (newvalue==3) then
+								Player:RemoveAura(16541, Player)
+								Player:AddAura(16540, Player)
+							elseif (newvalue==4) then
+								Player:RemoveAura(16542, Player)
+								Player:AddAura(16541, Player)
+							end
+							sel_array[3]=(sel_array[3])-1
+							points=(points)+1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill as its minimum value!")
+						end
+                    elseif(Button == "inc_2h_spec") then
+						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						spentpoints = 0
+						repeat
+							local pointrow = maxpointsdb:GetUInt32(0)
+							spentpoints = (spentpoints+pointrow)
+						until not maxpointsdb:NextRow()
+						if (spentpoints>=45) then
+							Player:SendBroadcastMessage("You already have 45 Alternate Advancement points allocated!")
+						else
+						if (points<=0) then
+						Player:SendBroadcastMessage("You have no Alternate Advancement points!")
+						else
+						local newvalue = (sel_array[4])+1
+						if (newvalue<=3) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=4")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of Two-Handed Weapon Specialization has been increased to "..newvalue..".")
+							if (newvalue==1) then
+								Player:AddAura(20111, Player)
+							elseif (newvalue==2) then
+								Player:AddAura(20112, Player)
+							elseif (newvalue==3) then
+								Player:AddAura(20113, Player)
+							end
+							sel_array[4]=(sel_array[4])+1
+							points=(points)-1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill is at its maximum value!")
+						end
+					end
+					end
+                    elseif(Button == "dec_2h_spec") then
+						local newvalue = (sel_array[4])-1
+						if (newvalue>=0) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=4")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of Two-Handed Sword Specialization has been decreased to "..newvalue..".")
+							if (newvalue==0) then
+								Player:RemoveAura(20111, Player)
+							elseif (newvalue==1) then
+								Player:RemoveAura(20112, Player)
+								Player:AddAura(20111, Player)
+							elseif (newvalue==2) then
+								Player:RemoveAura(20113, Player)
+								Player:AddAura(20112, Player)
+							end
+							sel_array[4]=(sel_array[4])-1
+							points=(points)+1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill as its minimum value!")
+						end
+                    elseif(Button == "inc_dw_spec") then
+						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						spentpoints = 0
+						repeat
+							local pointrow = maxpointsdb:GetUInt32(0)
+							spentpoints = (spentpoints+pointrow)
+						until not maxpointsdb:NextRow()
+						if (spentpoints>=45) then
+							Player:SendBroadcastMessage("You already have 45 Alternate Advancement points allocated!")
+						else
+						if (points<=0) then
+							Player:SendBroadcastMessage("You have no Alternate Advancement points!")
+						else
+							local newvalue = (sel_array[5])+1
+							if (newvalue<=5) then
+								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=5")
+								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								Player:SendBroadcastMessage("Your rank of Dual Wield Specialization has been increased to "..newvalue..".")
+								if (newvalue==1) then
+									Player:AddAura(13715, Player)
+								elseif (newvalue==2) then
+									Player:AddAura(13848, Player)
+								elseif (newvalue==3) then
+									Player:AddAura(13849, Player)
+								elseif (newvalue==4) then
+									Player:AddAura(13851, Player)
+								elseif (newvalue==5) then
+									Player:AddAura(13852, Player)
+							end
+							sel_array[5]=(sel_array[5])+1
+							points=(points)-1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill is at its maximum value!")
+						end
+					end
+					end
+					elseif(Button == "dec_dw_spec") then
+						local newvalue = (sel_array[5])-1
+						if (newvalue>=0) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=5")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of Dual Wield Specialization has been decreased to "..newvalue..".")
+							if (newvalue==0) then
+								Player:RemoveAura(13715, Player)
+							elseif (newvalue==1) then
+								Player:RemoveAura(13848, Player)
+								Player:AddAura(13715, Player)
+							elseif (newvalue==2) then
+								Player:RemoveAura(13849, Player)
+								Player:AddAura(13848, Player)
+							elseif (newvalue==3) then
+								Player:RemoveAura(13851, Player)
+								Player:AddAura(13849, Player)
+							elseif (newvalue==4) then
+								Player:RemoveAura(13852, Player)
+								Player:AddAura(13851, Player)
+							end
+							sel_array[5]=(sel_array[5])-1
+							points=(points)+1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill as its minimum value!")
+						end
+                    elseif(Button == "inc_sword_spec") then
+						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						spentpoints = 0
+						repeat
+							local pointrow = maxpointsdb:GetUInt32(0)
+							spentpoints = (spentpoints+pointrow)
+						until not maxpointsdb:NextRow()
+						if (spentpoints>=45) then
+							Player:SendBroadcastMessage("You already have 45 Alternate Advancement points allocated!")
+						else
+						if (points<=0) then
+							Player:SendBroadcastMessage("You have no Alternate Advancement points!")
+						else
+							local newvalue = (sel_array[6])+1
+							if (newvalue<=5) then
+								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=6")
+								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								Player:SendBroadcastMessage("Your rank of Sword Specialization has been increased to "..newvalue..".")
+								if (newvalue==1) then
+									Player:AddAura(12281, Player)
+								elseif (newvalue==2) then
+									Player:AddAura(12812, Player)
+								elseif (newvalue==3) then
+									Player:AddAura(12813, Player)
+								elseif (newvalue==4) then
+									Player:AddAura(12814, Player)
+								elseif (newvalue==5) then
+									Player:AddAura(12815, Player)
+							end
+							sel_array[6]=(sel_array[6])+1
+							points=(points)-1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill is at its maximum value!")
+						end
+					end
+					end
+                    elseif(Button == "dec_sword_spec") then
+						local newvalue = (sel_array[6])-1
+						if (newvalue>=0) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=6")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of Sword Specialization has been decreased to "..newvalue..".")
+							if (newvalue==0) then
+								Player:RemoveAura(12281, Player)
+							elseif (newvalue==1) then
+								Player:RemoveAura(12812, Player)
+								Player:AddAura(12281, Player)
+							elseif (newvalue==2) then
+								Player:RemoveAura(12813, Player)
+								Player:AddAura(12812, Player)
+							elseif (newvalue==3) then
+								Player:RemoveAura(12814, Player)
+								Player:AddAura(12813, Player)
+							elseif (newvalue==4) then
+								Player:RemoveAura(12815, Player)
+								Player:AddAura(12814, Player)
+							end
+							sel_array[6]=(sel_array[6])-1
+							points=(points)+1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill as its minimum value!")
+						end
+					end
+                end
             if(Button == "BackButton") then
                     AA.RenderMainMenu(Player)
                     Frame:Hide(Player)
