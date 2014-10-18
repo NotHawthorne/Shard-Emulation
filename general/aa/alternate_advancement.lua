@@ -222,8 +222,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						{"dec_stoicism", "<<", 17, 25, 36, 30},
 						{"inc_toughness", ">>", 17, 25, 16, 85},
 						{"dec_toughness", "<<", 17, 25, 16, 30},
-						--{"inc_e4e", ">>", 17, 25, -4, 85},
-						--{"dec_e4e", "<<", 17, 25, -4, 30},
+						{"inc_e4e", ">>", 17, 25, -4, 85},
+						{"dec_e4e", "<<", 17, 25, -4, 30},
 						{"inc_spell_deflection", ">>", 17, 25, -4, 85},
 						{"dec_spell_deflection", "<<", 17, 25, -4, 30},
 						{"inc_damage_shield", ">>", 17, 25, -24, 85},
@@ -239,13 +239,13 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                             {"bladed_armor", "Bladed Armor", 17, 120, 56, -54, 12},
                             {"stoicism", "Stoicism", 17, 120, 36, -69.5, 12},
                             {"toughness", "Toughness", 17, 120, 16, -63, 12},
-                            --{"e4e", "Eye for an Eye", 17, 120, -4, -54, 12},
+                            {"e4e", "Eye for an Eye", 17, 120, -4, -54, 12},
                             {"spell_deflection", "Spell Deflection", 17, 120, -4, -49, 12},
                             {"damage_shield", "Damage Shield", 17, 120, -24, -52, 12},
 							{"bladed_armor_value", ""..(tonumber(sel_array[1])).."/2", 17, 120, 56, 58.25, 12},
 							{"acclimation_value", ""..(tonumber(sel_array[2])).."/3", 17, 120, 36, 58.25, 12},
 							{"toughness_value", ""..(tonumber(sel_array[3])).."/5", 17, 120, 16, 58.25, 12},
-							--{"ardent_defender_value", ""..(tonumber(sel_array[4])).."/3", 17, 120, -4, 58.25, 12},
+							{"e4e_value", ""..(tonumber(sel_array[4])).."/2", 17, 120, -4, 58.25, 12},
 							{"spell_deflect_value", ""..(tonumber(sel_array[5])).."/3", 17, 120, -4, 58.25, 12},
 							{"damage_shield_value", ""..(tonumber(sel_array[6])).."/2", 17, 120, -24, 58.25, 12},
                     },
@@ -1091,6 +1091,57 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 								Player:AddAura(16308, Player)
 							end
 							sel_array[3]=(sel_array[3])-1
+							points=(points)+1
+							Frame:Hide(Player)
+							AA.RenderSubMenu(Player, Type)
+						else
+							Player:SendBroadcastMessage("This skill as its minimum value!")
+						end
+					elseif(Button == "inc_e4e") then
+						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						spentpoints = 0
+						repeat
+							local pointrow = maxpointsdb:GetUInt32(0)
+							spentpoints = (spentpoints+pointrow)
+						until not maxpointsdb:NextRow()
+						if (spentpoints>=45) then
+							Player:SendBroadcastMessage("You already have 45 Alternate Advancement points allocated!")
+						else
+						if (points<=0) then
+							Player:SendBroadcastMessage("You have no Alternate Advancement points!")
+						else
+							local newvalue = (sel_array[4])+1
+							if (newvalue<=2) then
+								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=4")
+								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								Player:SendBroadcastMessage("Your rank of Eye for an Eye has been increased to "..newvalue..".")
+								if (newvalue==1) then
+									Player:AddAura(9799, Player)
+								elseif (newvalue==2) then
+									Player:AddAura(25988, Player)
+								end
+								sel_array[4]=(sel_array[4])+1
+								points=(points)-1
+								Frame:Hide(Player)
+								AA.RenderSubMenu(Player, Type)
+							else
+								Player:SendBroadcastMessage("This skill is at its maximum value!")
+							end
+						end
+					end
+				    elseif(Button == "dec_spell_deflection") then
+						local newvalue = (sel_array[4])-1
+						if (newvalue>=0) then
+							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=5")
+							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							Player:SendBroadcastMessage("Your rank of Eye for an Eye has been decreased to "..newvalue..".")
+							if (newvalue==0) then
+								Player:RemoveAura(9799, Player)
+							elseif (newvalue==1) then
+								Player:RemoveAura(25988, Player)
+								Player:AddAura(9799, Player)
+							end
+							sel_array[4]=(sel_array[4])-1
 							points=(points)+1
 							Frame:Hide(Player)
 							AA.RenderSubMenu(Player, Type)
