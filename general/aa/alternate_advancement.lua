@@ -1129,7 +1129,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							end
 						end
 					end
-				    elseif(Button == "dec_spell_deflection") then
+				    elseif(Button == "dec_e4e") then
 						local newvalue = (sel_array[4])-1
 						if (newvalue>=0) then
 							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=5")
