@@ -62,12 +62,34 @@ function FL.RenderMainMenu(Player)
 				Frame:Hide(Player)
 				Player:SendBroadcastMessage("You obtained a Worn Mace and Battered Buckler.")
 				end)
-            Button:SetEvent("OnClick", function(self, event, Player, Cache)
-                Player:SendBroadcastMessage("test")
-            end)
-        end
-	end
+			elseif (v[1]=="daggers") then
+				Button:SetEvent("OnClick", function(self, event, Player, Cache)
+				Player:AddItem(2092, 2)
+				Frame:Hide(Player)
+				Player:SendBroadcastMessage("You obtained two Worn Daggers.")
+				end)
+			elseif (v[1]=="staff") then
+				Button:SetEvent("OnClick", function(self, event, Player, Cache)
+				Player:AddItem(35, 1)
+				Frame:Hide(Player)
+				Player:SendBroadcastMessage("You obtained a Bent Staff.")
+				end)
+			elseif (v[1]=="bow") then
+				Button:SetEvent("OnClick", function(self, event, Player, Cache)
+				Player:AddItem(2504, 1)
+				Player:AddItem(2512, 200)
+				Frame:Hide(Player)
+				Player:SendBroadcastMessage("You obtained a Worn Shortbow and some arrows.")
+				end)
+			end
+		end
 Frame:Send(Player)
 end
 
-RegisterPlayerEvent(18, first_login)
+function weaponskills (event, player)
+	player:LearnSpell(227, player)
+	player:LearnSpell(264, player)
+end
+
+RegisterPlayerEvent(30, weaponskills)
+RegisterPlayerEvent(30, first_login)
