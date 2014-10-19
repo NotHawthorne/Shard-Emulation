@@ -224,10 +224,10 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						{"dec_toughness", "<<", 17, 25, 16, 30},
 						{"inc_e4e", ">>", 17, 25, -4, 85},
 						{"dec_e4e", "<<", 17, 25, -4, 30},
-						{"inc_spell_deflection", ">>", 17, 25, -4, 85},
-						{"dec_spell_deflection", "<<", 17, 25, -4, 30},
-						{"inc_damage_shield", ">>", 17, 25, -24, 85},
-						{"dec_damage_shield", "<<", 17, 25, -24, 30},
+						{"inc_spell_deflection", ">>", 17, 25, -24, 85},
+						{"dec_spell_deflection", "<<", 17, 25, -24, 30},
+						{"inc_damage_shield", ">>", 17, 25, -44, 85},
+						{"dec_damage_shield", "<<", 17, 25, -44, 30},
                     },
                     EditBoxes = {
                      -- {"EditBoxName", "HoverText", Height, Width, YOffset, XOffset}
@@ -240,14 +240,14 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                             {"stoicism", "Stoicism", 17, 120, 36, -69.5, 12},
                             {"toughness", "Toughness", 17, 120, 16, -63, 12},
                             {"e4e", "Eye for an Eye", 17, 120, -4, -54, 12},
-                            {"spell_deflection", "Spell Deflection", 17, 120, -4, -49, 12},
-                            {"damage_shield", "Damage Shield", 17, 120, -24, -52, 12},
+                            {"spell_deflection", "Spell Deflection", 17, 120, -24, -49, 12},
+                            {"damage_shield", "Damage Shield", 17, 120, -44, -52, 12},
 							{"bladed_armor_value", ""..(tonumber(sel_array[1])).."/2", 17, 120, 56, 58.25, 12},
 							{"acclimation_value", ""..(tonumber(sel_array[2])).."/3", 17, 120, 36, 58.25, 12},
 							{"toughness_value", ""..(tonumber(sel_array[3])).."/5", 17, 120, 16, 58.25, 12},
 							{"e4e_value", ""..(tonumber(sel_array[4])).."/2", 17, 120, -4, 58.25, 12},
-							{"spell_deflect_value", ""..(tonumber(sel_array[5])).."/3", 17, 120, -4, 58.25, 12},
-							{"damage_shield_value", ""..(tonumber(sel_array[6])).."/2", 17, 120, -24, 58.25, 12},
+							{"spell_deflect_value", ""..(tonumber(sel_array[5])).."/3", 17, 120, -24, 58.25, 12},
+							{"damage_shield_value", ""..(tonumber(sel_array[6])).."/2", 17, 120, -44, 58.25, 12},
                     },
                     StatusLinks = {
                      -- {"EditBoxName", "ButtonName"}

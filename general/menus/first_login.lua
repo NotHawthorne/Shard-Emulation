@@ -15,7 +15,7 @@ function FL.RenderMainMenu(Player)
 			{"1h_sword", "Mace and Shield", 17, 125, 4, 0},
 			{"daggers", "Daggers", 17, 125, -16, 0},
 			{"staff", "Staff", 17, 125, -36, 0},
-			{"spear", "Spear", 17, 125,-56, 0},
+			{"bow", "Bow", 17, 125,-56, 0},
 		};
         local YOffset = 320
         local Frame = CreateFrame(FL.Prefix.."MainFrame")
