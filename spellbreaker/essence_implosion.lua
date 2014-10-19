@@ -1,8 +1,5 @@
 local function essence_implosion (event, player, spell)
-
 	local target = spell:GetTarget()
-	local id = 818016
-	
 	if (spell:GetEntry()==818016) then
 		local aura = target:GetAura(818009)
 		if (aura) then
