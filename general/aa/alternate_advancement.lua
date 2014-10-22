@@ -25,11 +25,11 @@ function AA.OnGossip(event, Player, unit)
 	local playerguid = Player:GetGUIDLow()
 	local query1 = WorldDBQuery("SELECT guild FROM ownership")
 	local query2 = CharDBQuery("SELECT guildid FROM guild_member WHERE guid="..Player:GetGUIDLow().."")
-	query3 = CharDBQuery("SELECT points FROM character_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
+	query3 = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
 	if (query3==nil) then
-		CharDBExecute("INSERT INTO character_aa_points (playerguid,points) VALUES ("..Player:GetGUIDLow()..",0)")
-		Player:SendBroadcastMessage("Successfully created character_aa_points entry for player GUID "..Player:GetGUIDLow().."!")
-		query3 = CharDBQuery("SELECT points FROM character_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
+		CharDBExecute("INSERT INTO shard_aa_points (playerguid,points) VALUES ("..Player:GetGUIDLow()..",0)")
+		Player:SendBroadcastMessage("Successfully created shard_aa_points entry for player GUID "..Player:GetGUIDLow().."!")
+		query3 = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
 	end
 	points = query3:GetUInt32(0)
 	if (query1==nil) then
@@ -106,7 +106,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 									if (v=="Stealth") then
 										cat = 10
 									end
-									categoryquery = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().." AND category="..cat.." GROUP BY selection ORDER BY selection ASC")
+									categoryquery = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().." AND category="..cat.." GROUP BY selection ORDER BY selection ASC")
 									if (categoryquery~=nil) then
 									sel_ticker=0
 										repeat
@@ -119,7 +119,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 										sel = 0
 										repeat
 											sel = sel+1
-											CharDBExecute("INSERT INTO alternate_advancement (playerguid, category, selection) VALUES ("..Player:GetGUIDLow()..","..cat..","..sel..")")
+											CharDBExecute("INSERT INTO shard_aa_allocation (playerguid, category, selection) VALUES ("..Player:GetGUIDLow()..","..cat..","..sel..")")
 										until sel==6
 										Player:SendBroadcastMessage("Created database framework!")
 									end
@@ -544,7 +544,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
     function AA.HandleOnClick(Player, Type, Frame, Button, Cache)
             if(Type == "Weaponmastery") then
                     if(Button == "inc_daggerspec") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -558,8 +558,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 						local newvalue = (sel_array[1])+1
 						if (newvalue<=5) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=1")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=1")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Dagger Specialization has been increased to "..newvalue..".")
 							if (newvalue==1) then
 								Player:AddAura(13706, Player)
@@ -584,8 +584,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     elseif(Button == "dec_daggerspec") then
 						local newvalue = (sel_array[1])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=1")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=1")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Dagger Specialization has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(13706, Player)
@@ -610,7 +610,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
                     elseif(Button == "inc_precision") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -624,8 +624,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 						local newvalue = (sel_array[2])+1
 						if (newvalue<=3) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=2")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=2")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Precision has been increased to "..newvalue..".")
 							if (newvalue==1) then
 								Player:AddAura(29590, Player)
@@ -646,8 +646,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     elseif(Button == "dec_precision") then
 						local newvalue = (sel_array[2])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=2")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=2")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Precision has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(29590, Player)
@@ -666,7 +666,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
                     elseif(Button == "inc_1h_spec") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -680,8 +680,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 						local newvalue = (sel_array[3])+1
 						if (newvalue<=5) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=3")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=3")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of One-Handed Weapon Specialization has been increased to "..newvalue..".")
 							if (newvalue==1) then
 								Player:AddAura(16538, Player)
@@ -706,8 +706,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     elseif(Button == "dec_1h_spec") then
 						local newvalue = (sel_array[3])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=3")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=3")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of One-Handed Sword Specialization has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(16538, Player)
@@ -732,7 +732,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
                     elseif(Button == "inc_2h_spec") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -746,8 +746,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 						local newvalue = (sel_array[4])+1
 						if (newvalue<=3) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=4")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=4")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Two-Handed Weapon Specialization has been increased to "..newvalue..".")
 							if (newvalue==1) then
 								Player:AddAura(20111, Player)
@@ -768,8 +768,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     elseif(Button == "dec_2h_spec") then
 						local newvalue = (sel_array[4])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=4")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=4")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Two-Handed Sword Specialization has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(20111, Player)
@@ -788,7 +788,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
                     elseif(Button == "inc_dw_spec") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -802,8 +802,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 							local newvalue = (sel_array[5])+1
 							if (newvalue<=5) then
-								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=5")
-								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=5")
+								CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 								Player:SendBroadcastMessage("Your rank of Dual Wield Specialization has been increased to "..newvalue..".")
 								if (newvalue==1) then
 									Player:AddAura(13715, Player)
@@ -828,8 +828,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 					elseif(Button == "dec_dw_spec") then
 						local newvalue = (sel_array[5])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=5")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=5")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Dual Wield Specialization has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(13715, Player)
@@ -854,7 +854,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
                     elseif(Button == "inc_sword_spec") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -868,8 +868,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 							local newvalue = (sel_array[6])+1
 							if (newvalue<=5) then
-								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=6")
-								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=6")
+								CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 								Player:SendBroadcastMessage("Your rank of Sword Specialization has been increased to "..newvalue..".")
 								if (newvalue==1) then
 									Player:AddAura(12281, Player)
@@ -894,8 +894,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     elseif(Button == "dec_sword_spec") then
 						local newvalue = (sel_array[6])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=6")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=6")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Sword Specialization has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(12281, Player)
@@ -923,7 +923,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                 end
 			if(Type == "Defense") then
 				if(Button == "inc_bladed_armor") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -937,8 +937,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 							local newvalue = (sel_array[1])+1
 							if (newvalue<=2) then
-								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=1")
-								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=1")
+								CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 								Player:SendBroadcastMessage("Your rank of Bladed Armor has been increased to "..newvalue..".")
 								if (newvalue==1) then
 									Player:AddAura(48978, Player)
@@ -957,8 +957,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 				    elseif(Button == "dec_bladed_armor") then
 						local newvalue = (sel_array[1])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=1")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=1")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Bladed Armor has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(48978, Player)
@@ -975,7 +975,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						end
 					end
 					if(Button == "inc_stoicism") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -989,8 +989,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 							local newvalue = (sel_array[2])+1
 							if (newvalue<=3) then
-								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=2")
-								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=2")
+								CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 								Player:SendBroadcastMessage("Your rank of Stoicism has been increased to "..newvalue..".")
 								if (newvalue==1) then
 									Player:AddAura(31844, Player)
@@ -1011,8 +1011,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 				    elseif(Button == "dec_stoicism") then
 						local newvalue = (sel_array[2])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=2")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=2")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Stoicism has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(31844, Player)
@@ -1032,7 +1032,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						end
 					end
 					if(Button == "inc_toughness") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -1046,8 +1046,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 							local newvalue = (sel_array[3])+1
 							if (newvalue<=5) then
-								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=3")
-								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=3")
+								CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 								Player:SendBroadcastMessage("Your rank of Toughness has been increased to "..newvalue..".")
 								if (newvalue==1) then
 									Player:AddAura(16252, Player)
@@ -1072,8 +1072,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 				    elseif(Button == "dec_toughness") then
 						local newvalue = (sel_array[3])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=3")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=3")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Toughness has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(16252, Player)
@@ -1098,7 +1098,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
 					elseif(Button == "inc_e4e") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -1112,8 +1112,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 							local newvalue = (sel_array[4])+1
 							if (newvalue<=2) then
-								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=4")
-								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=4")
+								CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 								Player:SendBroadcastMessage("Your rank of Eye for an Eye has been increased to "..newvalue..".")
 								if (newvalue==1) then
 									Player:AddAura(9799, Player)
@@ -1132,8 +1132,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 				    elseif(Button == "dec_e4e") then
 						local newvalue = (sel_array[4])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=5")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=5")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Eye for an Eye has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(9799, Player)
@@ -1149,7 +1149,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
 					elseif(Button == "inc_spell_deflection") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -1163,8 +1163,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 							local newvalue = (sel_array[5])+1
 							if (newvalue<=3) then
-								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=5")
-								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=5")
+								CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 								Player:SendBroadcastMessage("Your rank of Spell Deflection has been increased to "..newvalue..".")
 								if (newvalue==1) then
 									Player:AddAura(49145, Player)
@@ -1185,8 +1185,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 				    elseif(Button == "dec_spell_deflection") then
 						local newvalue = (sel_array[5])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=5")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=2 AND selection=5")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Spell Deflection has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(49145, Player)
@@ -1208,7 +1208,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 				end
             if(Type == "Berserking") then
                     if(Button == "inc_daggerspec") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -1222,8 +1222,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 						local newvalue = (sel_array[1])+1
 						if (newvalue<=5) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=1")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=1")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Dagger Specialization has been increased to "..newvalue..".")
 							if (newvalue==1) then
 								Player:AddAura(13706, Player)
@@ -1248,8 +1248,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     elseif(Button == "dec_daggerspec") then
 						local newvalue = (sel_array[1])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=1")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=1")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Dagger Specialization has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(13706, Player)
@@ -1274,7 +1274,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
                     elseif(Button == "inc_precision") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -1288,8 +1288,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 						local newvalue = (sel_array[2])+1
 						if (newvalue<=3) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=2")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=2")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Precision has been increased to "..newvalue..".")
 							if (newvalue==1) then
 								Player:AddAura(29590, Player)
@@ -1310,8 +1310,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     elseif(Button == "dec_precision") then
 						local newvalue = (sel_array[2])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=2")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=2")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Precision has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(29590, Player)
@@ -1330,7 +1330,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
                     elseif(Button == "inc_1h_spec") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -1344,8 +1344,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 						local newvalue = (sel_array[3])+1
 						if (newvalue<=5) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=3")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=3")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of One-Handed Weapon Specialization has been increased to "..newvalue..".")
 							if (newvalue==1) then
 								Player:AddAura(16538, Player)
@@ -1370,8 +1370,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     elseif(Button == "dec_1h_spec") then
 						local newvalue = (sel_array[3])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=3")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=3")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of One-Handed Sword Specialization has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(16538, Player)
@@ -1396,7 +1396,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
                     elseif(Button == "inc_2h_spec") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -1410,8 +1410,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 						local newvalue = (sel_array[4])+1
 						if (newvalue<=3) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=4")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=4")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Two-Handed Weapon Specialization has been increased to "..newvalue..".")
 							if (newvalue==1) then
 								Player:AddAura(20111, Player)
@@ -1432,8 +1432,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     elseif(Button == "dec_2h_spec") then
 						local newvalue = (sel_array[4])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=4")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=4")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Two-Handed Sword Specialization has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(20111, Player)
@@ -1452,7 +1452,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
                     elseif(Button == "inc_dw_spec") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -1466,8 +1466,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 							local newvalue = (sel_array[5])+1
 							if (newvalue<=5) then
-								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=5")
-								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=5")
+								CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 								Player:SendBroadcastMessage("Your rank of Dual Wield Specialization has been increased to "..newvalue..".")
 								if (newvalue==1) then
 									Player:AddAura(13715, Player)
@@ -1492,8 +1492,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 					elseif(Button == "dec_dw_spec") then
 						local newvalue = (sel_array[5])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=5")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=5")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Dual Wield Specialization has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(13715, Player)
@@ -1518,7 +1518,7 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 							Player:SendBroadcastMessage("This skill as its minimum value!")
 						end
                     elseif(Button == "inc_sword_spec") then
-						local maxpointsdb = CharDBQuery("SELECT points FROM alternate_advancement WHERE playerguid="..Player:GetGUIDLow().."")
+						local maxpointsdb = CharDBQuery("SELECT points FROM shard_aa_allocation WHERE playerguid="..Player:GetGUIDLow().."")
 						spentpoints = 0
 						repeat
 							local pointrow = maxpointsdb:GetUInt32(0)
@@ -1532,8 +1532,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
 						else
 							local newvalue = (sel_array[6])+1
 							if (newvalue<=5) then
-								CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=6")
-								CharDBExecute("UPDATE character_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+								CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=6")
+								CharDBExecute("UPDATE shard_aa_points SET points="..((points)-1).." WHERE playerguid="..Player:GetGUIDLow().."")
 								Player:SendBroadcastMessage("Your rank of Sword Specialization has been increased to "..newvalue..".")
 								if (newvalue==1) then
 									Player:AddAura(12281, Player)
@@ -1558,8 +1558,8 @@ RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
                     elseif(Button == "dec_sword_spec") then
 						local newvalue = (sel_array[6])-1
 						if (newvalue>=0) then
-							CharDBExecute("UPDATE alternate_advancement SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=6")
-							CharDBExecute("UPDATE character_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+							CharDBExecute("UPDATE shard_aa_allocation SET points="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().." AND category=1 AND selection=6")
+							CharDBExecute("UPDATE shard_aa_points SET points="..((points)+1).." WHERE playerguid="..Player:GetGUIDLow().."")
 							Player:SendBroadcastMessage("Your rank of Sword Specialization has been decreased to "..newvalue..".")
 							if (newvalue==0) then
 								Player:RemoveAura(12281, Player)
