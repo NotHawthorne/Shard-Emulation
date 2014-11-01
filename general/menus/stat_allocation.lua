@@ -3,17 +3,6 @@ local SA = {
 };
 pointgain = 6 -- SET NUMBER OF POINTS GAINED PER LEVEL
 function stat_allocation (Event, Player, oldLevel)
-	if (oldLevel<(Player:GetLevel())) then
-		existing_statpoints = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
-		CharDBExecute("UPDATE shard_aa_points SET statpoints="..((existing_statpoints:GetUInt32(0))+pointgain).." WHERE playerguid="..Player:GetGUIDLow().."")
-		Player:SendBroadcastMessage("You've gained "..pointgain.." stat points!")
-	else
-		Player:SendBroadcastMessage("H...How did you de-level!?")
-	end
-	SA.RenderMainMenu(Player)
-end
--- [[ MAIN MENU ]]
-function SA.RenderMainMenu(Player)
 		stat_array={
 			0,
 			0,
@@ -22,6 +11,19 @@ function SA.RenderMainMenu(Player)
 			0,
 			0
 		}
+	if (oldLevel<(Player:GetLevel())) then
+		existing_statpoints = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
+		points = ((existing_statpoints:GetUInt32(0))+pointgain)
+		CharDBExecute("UPDATE shard_aa_points SET statpoints="..points.." WHERE playerguid="..Player:GetGUIDLow().."")
+		Player:SendBroadcastMessage("You've gained "..pointgain.." stat points!")
+	else
+		Player:SendBroadcastMessage("H...How did you de-level!?")
+	end
+	initial = 1
+	SA.RenderMainMenu(Player)
+end
+-- [[ MAIN MENU ]]
+function SA.RenderMainMenu(Player)
 		statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..Player:GetGUIDLow().."")
 		statpoints = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
 		base_statdb = WorldDBQuery("SELECT str, agi, sta, inte, spi FROM player_levelstats WHERE race="..Player:GetRace().."")
@@ -39,8 +41,12 @@ function SA.RenderMainMenu(Player)
 		repeat
 			stat_ticker = (stat_ticker+1)
 			stat_array[(stat_ticker)] = (statquery:GetUInt32((stat_ticker)-1))
-			Player:SendBroadcastMessage(""..stat_array[(stat_ticker)].."")
 		until (stat_ticker==5)
+		if (str_newvalue~=nil) then
+			stat_array[1] = str_newvalue
+		else
+			stat_array[1] = 0
+		end
         SA.TextBoxes = {
             {"prompt1", "Allocate stat points.", 15, 185, 57.5, 0, 12},
             {"str", "Strength", 17, 120, 37.5, -70, 12},
@@ -53,7 +59,7 @@ function SA.RenderMainMenu(Player)
 			{"sta_value", ""..(tonumber(stat_array[3])).."", 17, 120, -2.5, 58.25, 12},
 			{"inte_value", ""..(tonumber(stat_array[4])).."", 17, 120, -22.5, 58.25, 12},
 			{"spi_value", ""..(tonumber(stat_array[5])).."", 17, 120, -42.5, 58.25, 12},
-			{"prompt2", "Available stat points: "..statpoints:GetUInt32(0).."", 15, 185, -62.5, 0, 12},
+			{"prompt2", "Available stat points: "..points.."", 15, 185, -62.5, 0, 12},
         };
 		SA.Buttons = {
 			{"inc_str", ">>", 17, 25, 37.5, 85},
@@ -103,18 +109,43 @@ function SA.RenderMainMenu(Player)
 				Frame:Hide(Player)
 				Button:SetEvent("OnClick", function(self, event, Player, Cache)
 				Player:AddAura(7464, Player)
-				local newvalue = (stat_array[1])+1
-				CharDBExecute("UPDATE shard_aa_points SET statpoints="..((statpoints:GetUInt32(0))-1).." WHERE playerguid="..Player:GetGUIDLow().."")
-				CharDBExecute("UPDATE shard_stats SET str="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().."")
+				str_newvalue = (stat_array[1])+1
+				stat_array[1] = str_newvalue
+				points = points-1
+				CharDBExecute("UPDATE shard_aa_points SET statpoints="..points.." WHERE playerguid="..Player:GetGUIDLow().."")
+				CharDBExecute("UPDATE shard_stats SET str="..str_newvalue.." WHERE playerguid="..Player:GetGUIDLow().."")
 				SA.RenderMainMenu(Player)
 				Player:SendBroadcastMessage("You've increased your Strength by 1.")
 				end)
-			elseif (v[1]=="1h_sword") then
-				Button:SetEvent("OnClick", function(self, event, Player, Cache)
-				Player:AddItem(36, 1)
-				Player:AddItem(2210, 1)
+			elseif (v[1]=="dec_str") then
 				Frame:Hide(Player)
-				Player:SendBroadcastMessage("You obtained a Worn Mace and Battered Buckler.")
+				Button:SetEvent("OnClick", function(self, event, Player, Cache)
+				Player:RemoveAura(7464, Player)
+				str_newvalue = (stat_array[1])-1
+				stat_array[1] = str_newvalue
+				points = points+1
+				CharDBExecute("UPDATE shard_aa_points SET statpoints="..points.." WHERE playerguid="..Player:GetGUIDLow().."")
+				CharDBExecute("UPDATE shard_stats SET str="..str_newvalue.." WHERE playerguid="..Player:GetGUIDLow().."")
+				statdb = CharDBQuery("SELECT str FROM shard_stats WHERE playerguid="..Player:GetGUIDLow().."")
+				allocated_str = statdb:GetUInt32(0)
+				local ticker = 0
+				if (initial==1) then
+					if (allocated_str>0) then
+						repeat
+							Player:AddAura(7464, Player)
+							ticker = ticker+1
+						until (ticker==(allocated_str-1))
+					end
+				else
+					if (allocated_str>0) then
+						repeat
+							Player:AddAura(7464, Player)
+							ticker = ticker+1
+						until (ticker==allocated_str)
+					end
+				end
+				SA.RenderMainMenu(Player)
+				Player:SendBroadcastMessage("You've decreased your Strength by 1.")
 				end)
 			elseif (v[1]=="daggers") then
 				Button:SetEvent("OnClick", function(self, event, Player, Cache)
