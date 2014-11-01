@@ -38,7 +38,7 @@ function SA.RenderMainMenu(Player)
 		stat_ticker = 0
 		repeat
 			stat_ticker = (stat_ticker+1)
-			stat_array[(stat_ticker)] = ((statquery:GetUInt32((stat_ticker)-1))-(base_statdb:GetUInt32((stat_ticker-1))))
+			stat_array[(stat_ticker)] = (statquery:GetUInt32((stat_ticker)-1))
 			Player:SendBroadcastMessage(""..stat_array[(stat_ticker)].."")
 		until (stat_ticker==5)
         SA.TextBoxes = {
@@ -100,11 +100,12 @@ function SA.RenderMainMenu(Player)
                            
             -- [[ HANDLE ONCLICK EVENT ]]
 			if (v[1]=="inc_str") then
+				Frame:Hide(Player)
 				Button:SetEvent("OnClick", function(self, event, Player, Cache)
 				Player:AddAura(7464, Player)
+				local newvalue = (stat_array[1])+1
 				CharDBExecute("UPDATE shard_aa_points SET statpoints="..((statpoints:GetUInt32(0))-1).." WHERE playerguid="..Player:GetGUIDLow().."")
-				CharDBExecute("UPDATE shard_stats SET str="..((tonumber(stat_array[1]))+1).." WHERE playerguid="..Player:GetGUIDLow().."")
-				Frame:Hide(Player)
+				CharDBExecute("UPDATE shard_stats SET str="..newvalue.." WHERE playerguid="..Player:GetGUIDLow().."")
 				SA.RenderMainMenu(Player)
 				Player:SendBroadcastMessage("You've increased your Strength by 1.")
 				end)
@@ -136,7 +137,6 @@ function SA.RenderMainMenu(Player)
 				end)
 			end
 		end
-	CharDBExecute("INSERT INTO shard_stats (playerguid) VALUES ("..Player:GetGUIDLow()..")")
 Frame:Send(Player)
 end
 

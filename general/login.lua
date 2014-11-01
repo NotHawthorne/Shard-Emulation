@@ -29,28 +29,26 @@ local function multiboxing (event, player)
 end
 
 function apply_allocation (event, player)
-	base_statdb = WorldDBQuery("SELECT str, agi, sta, inte, spi FROM player_levelstats WHERE race="..player:GetRace().."")
 	statdb = CharDBQuery("SELECT str, agi, sta, inte, spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-	if (statdb==nil) then
-		CharDBExecute("INSERT INTO shard_stats (playerguid, str, agi, sta, inte, spi) VALUES ("..base_statdb:GetUInt32(0)..", "..base_statdb:GetUInt32(1)..", "..base_statdb:GetUInt32(2)..", "..base_statdb:GetUInt32(3)..", "..base_statdb:GetUInt32(4)..")")
-		player:SendBroadcastMessage("[DEBUG]: New player! No stat allocation.")
-	else
-	allocated_str = ((statdb:GetUInt32(0))-(base_statdb:GetUInt32(0)))
-	allocated_agi = ((statdb:GetUInt32(1))-(base_statdb:GetUInt32(1)))
-	allocated_sta = ((statdb:GetUInt32(2))-(base_statdb:GetUInt32(2)))
-	allocated_inte = ((statdb:GetUInt32(3))-(base_statdb:GetUInt32(3)))
-	allocated_spi = ((statdb:GetUInt32(4))-(base_statdb:GetUInt32(4)))
+	allocated_str = statdb:GetUInt32(0)
+	allocated_agi = statdb:GetUInt32(1)
+	allocated_sta = statdb:GetUInt32(2)
+	allocated_inte = statdb:GetUInt32(3)
+	allocated_spi = statdb:GetUInt32(4)
 
-	ticker1 = allocated_str
+	ticker1 = 0
 	ticker2 = allocated_agi
 	ticker3 = allocated_sta
 	ticker4 = allocated_inte
 	ticker5 = allocated_spi
 
 	if (allocated_str>0) then
-		player:SendBroadcastMessage(""..allocated_str.."")
+		repeat
+			player:AddAura(7464, player)
+			ticker1 = ((ticker1)+1)
+			player:SendBroadcastMessage("[DEBUG]: +1 Strength!")
+		until (ticker1==allocated_str)
 	end
-end
 end
 
 local function manaregen (event, player)
