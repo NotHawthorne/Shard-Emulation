@@ -16,10 +16,18 @@ function stat_allocation (Event, Player, oldLevel)
 		points = ((existing_statpoints:GetUInt32(0))+pointgain)
 		CharDBExecute("UPDATE shard_aa_points SET statpoints="..points.." WHERE playerguid="..Player:GetGUIDLow().."")
 		Player:SendBroadcastMessage("You've gained "..pointgain.." stat points!")
+		statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..Player:GetGUIDLow().."")
+		stat_ticker = 0
+		repeat
+			stat_ticker = (stat_ticker+1)
+			stat_array[(stat_ticker)] = (statquery:GetUInt32((stat_ticker)-1))
+		until (stat_ticker==5)
+		stat_ticker = 0
 	else
 		Player:SendBroadcastMessage("H...How did you de-level!?")
 	end
 	initial = 1
+	update = 1
 	SA.RenderMainMenu(Player)
 end
 -- [[ MAIN MENU ]]
@@ -42,10 +50,11 @@ function SA.RenderMainMenu(Player)
 			stat_ticker = (stat_ticker+1)
 			stat_array[(stat_ticker)] = (statquery:GetUInt32((stat_ticker)-1))
 		until (stat_ticker==5)
-		if (str_newvalue~=nil) then
+		if (initial==1) then
+			str_newvalue = statquery:GetUInt32(0)
+		end
+		if (update==1) then
 			stat_array[1] = str_newvalue
-		else
-			stat_array[1] = 0
 		end
         SA.TextBoxes = {
             {"prompt1", "Allocate stat points.", 15, 185, 57.5, 0, 12},
@@ -116,6 +125,7 @@ function SA.RenderMainMenu(Player)
 				CharDBExecute("UPDATE shard_stats SET str="..str_newvalue.." WHERE playerguid="..Player:GetGUIDLow().."")
 				SA.RenderMainMenu(Player)
 				Player:SendBroadcastMessage("You've increased your Strength by 1.")
+				initial = 0
 				end)
 			elseif (v[1]=="dec_str") then
 				Frame:Hide(Player)
@@ -144,6 +154,7 @@ function SA.RenderMainMenu(Player)
 						until (ticker==allocated_str)
 					end
 				end
+				initial = 0
 				SA.RenderMainMenu(Player)
 				Player:SendBroadcastMessage("You've decreased your Strength by 1.")
 				end)
