@@ -1,0 +1,143 @@
+local SA = {
+    Prefix = "SA"
+};
+pointgain = 6 -- SET NUMBER OF POINTS GAINED PER LEVEL
+function stat_allocation (Event, Player, oldLevel)
+	if (oldLevel<(Player:GetLevel())) then
+		existing_statpoints = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
+		CharDBExecute("UPDATE shard_aa_points SET statpoints="..((existing_statpoints:GetUInt32(0))+pointgain).." WHERE playerguid="..Player:GetGUIDLow().."")
+		Player:SendBroadcastMessage("You've gained "..pointgain.." stat points!")
+	else
+		Player:SendBroadcastMessage("H...How did you de-level!?")
+	end
+	SA.RenderMainMenu(Player)
+end
+-- [[ MAIN MENU ]]
+function SA.RenderMainMenu(Player)
+		stat_array={
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		}
+		statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..Player:GetGUIDLow().."")
+		statpoints = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
+		base_statdb = WorldDBQuery("SELECT str, agi, sta, inte, spi FROM player_levelstats WHERE race="..Player:GetRace().."")
+		if (statpoints==nil) then 
+			Player:SendBroadcastMessage("[DEBUG]:No database framework! Creating...")
+			CharDBExecute("INSERT INTO shard_aa_points (playerguid) VALUES ("..Player:GetGUIDLow()..")")
+			statpoints = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
+			if (statpoints==nil) then 
+				Player:SendBroadcastMessage("[DEBUG]:Database framework creation failed.")
+			else
+				Player:SendBroadcastMessage("[DEBUG]:Database framework creation succeeded!")
+			end
+		end
+		stat_ticker = 0
+		repeat
+			stat_ticker = (stat_ticker+1)
+			stat_array[(stat_ticker)] = ((statquery:GetUInt32((stat_ticker)-1))-(base_statdb:GetUInt32((stat_ticker-1))))
+			Player:SendBroadcastMessage(""..stat_array[(stat_ticker)].."")
+		until (stat_ticker==5)
+        SA.TextBoxes = {
+            {"prompt1", "Allocate stat points.", 15, 185, 57.5, 0, 12},
+            {"str", "Strength", 17, 120, 37.5, -70, 12},
+            {"agi", "Dexterity", 17, 120, 17.5, -69, 12},
+            {"sta", "Stamina", 17, 120, -2.5, -71.5, 12},
+            {"inte", "Intelligence", 17, 120, -22.5, -61.5, 12},
+            {"spi", "Wisdom", 17, 120, -42.5, -71.5, 12},
+			{"str_value", ""..(tonumber(stat_array[1])).."", 17, 120, 37.5, 58.25, 12},
+			{"agi_value", ""..(tonumber(stat_array[2])).."", 17, 120, 17.5, 58.25, 12},
+			{"sta_value", ""..(tonumber(stat_array[3])).."", 17, 120, -2.5, 58.25, 12},
+			{"inte_value", ""..(tonumber(stat_array[4])).."", 17, 120, -22.5, 58.25, 12},
+			{"spi_value", ""..(tonumber(stat_array[5])).."", 17, 120, -42.5, 58.25, 12},
+			{"prompt2", "Available stat points: "..statpoints:GetUInt32(0).."", 15, 185, -62.5, 0, 12},
+        };
+		SA.Buttons = {
+			{"inc_str", ">>", 17, 25, 37.5, 85},
+			{"dec_str", "<<", 17, 25, 37.5, 30},
+			{"inc_sta", ">>", 17, 25, 17.5, 85},
+			{"dec_sta", "<<", 17, 25, 17.5, 30},
+			{"inc_agi", ">>", 17, 25, -2.5, 85},
+			{"dec_agi", "<<", 17, 25, -2.5, 30},
+			{"inc_inte", ">>", 17, 25, -22.5, 85},
+			{"dec_inte", "<<", 17, 25, -22.5, 30},
+			{"inc_spi", ">>", 17, 25, -42.5, 85},
+			{"dec_spi", "<<", 17, 25, -42.5, 30},
+		};
+        local YOffset = 320
+        local Frame = CreateFrame(SA.Prefix.."MainFrame")
+       
+        Frame:SetText("Stat Allocation")
+        Frame:SetCantMove(false)
+        Frame:SetHeight(190)
+        Frame:SetWidth(220)
+		
+         -- [[ RENDER TEXT BOXES ]]
+        for k, v in pairs(SA.TextBoxes) do
+            local TextBox = Frame:CreateTextBox(SA.Prefix..v[1])
+            TextBox:SetText(v[2])
+            TextBox:SetHeight(v[3])
+            TextBox:SetWidth(v[4])
+            TextBox:SetYOffset(v[5])
+            TextBox:SetXOffset(v[6])
+            TextBox:SetTextHeight(v[7])
+        end
+        -- [[ RENDER BUTTONS ]]
+        for k, v in pairs(SA.Buttons) do
+            if Button then
+                print("True")
+            end
+            local Button = Frame:CreateButton(SA.Prefix..v[1])
+                           
+            Button:SetText(v[2])
+            Button:SetHeight(v[3])
+            Button:SetWidth(v[4])
+            Button:SetYOffset(v[5])
+            Button:SetXOffset(v[6])
+                           
+            -- [[ HANDLE ONCLICK EVENT ]]
+			if (v[1]=="inc_str") then
+				Button:SetEvent("OnClick", function(self, event, Player, Cache)
+				Player:AddAura(7464, Player)
+				CharDBExecute("UPDATE shard_aa_points SET statpoints="..((statpoints:GetUInt32(0))-1).." WHERE playerguid="..Player:GetGUIDLow().."")
+				CharDBExecute("UPDATE shard_stats SET str="..((tonumber(stat_array[1]))+1).." WHERE playerguid="..Player:GetGUIDLow().."")
+				Frame:Hide(Player)
+				SA.RenderMainMenu(Player)
+				Player:SendBroadcastMessage("You've increased your Strength by 1.")
+				end)
+			elseif (v[1]=="1h_sword") then
+				Button:SetEvent("OnClick", function(self, event, Player, Cache)
+				Player:AddItem(36, 1)
+				Player:AddItem(2210, 1)
+				Frame:Hide(Player)
+				Player:SendBroadcastMessage("You obtained a Worn Mace and Battered Buckler.")
+				end)
+			elseif (v[1]=="daggers") then
+				Button:SetEvent("OnClick", function(self, event, Player, Cache)
+				Player:AddItem(2092, 2)
+				Frame:Hide(Player)
+				Player:SendBroadcastMessage("You obtained two Worn Daggers.")
+				end)
+			elseif (v[1]=="staff") then
+				Button:SetEvent("OnClick", function(self, event, Player, Cache)
+				Player:AddItem(35, 1)
+				Frame:Hide(Player)
+				Player:SendBroadcastMessage("You obtained a Bent Staff.")
+				end)
+			elseif (v[1]=="bow") then
+				Button:SetEvent("OnClick", function(self, event, Player, Cache)
+				Player:AddItem(2504, 1)
+				Player:AddItem(2512, 200)
+				Frame:Hide(Player)
+				Player:SendBroadcastMessage("You obtained a Worn Shortbow and some arrows.")
+				end)
+			end
+		end
+	CharDBExecute("INSERT INTO shard_stats (playerguid) VALUES ("..Player:GetGUIDLow()..")")
+Frame:Send(Player)
+end
+
+RegisterPlayerEvent(13, stat_allocation)

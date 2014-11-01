@@ -5,7 +5,19 @@
     };
 --[[DYNAMIC VARIABLE DECLARATION]]
 
-sel_array={
+
+    -- [[OnChat Trigger]]
+function AA.OnGossip(event, Player, unit)
+	local playerguid = Player:GetGUIDLow()
+	query3 = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
+	if (query3==nil) then
+		CharDBExecute("INSERT INTO shard_aa_points (playerguid,points) VALUES ("..Player:GetGUIDLow()..",0)")
+		Player:SendBroadcastMessage("Successfully created shard_aa_points entry for player GUID "..Player:GetGUIDLow().."!")
+		query3 = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
+	end
+	points = query3:GetUInt32(0)
+	AA.RenderMainMenu(Player)
+	sel_array={
 			0,
 			0,
 			0,
@@ -18,32 +30,10 @@ sel_array={
 			0
 		  }
 
-cat=0
-
-    -- [[OnChat Trigger]]
-function AA.OnGossip(event, Player, unit)
-	local playerguid = Player:GetGUIDLow()
-	local query1 = WorldDBQuery("SELECT guild FROM ownership")
-	local query2 = CharDBQuery("SELECT guildid FROM guild_member WHERE guid="..Player:GetGUIDLow().."")
-	query3 = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
-	if (query3==nil) then
-		CharDBExecute("INSERT INTO shard_aa_points (playerguid,points) VALUES ("..Player:GetGUIDLow()..",0)")
-		Player:SendBroadcastMessage("Successfully created shard_aa_points entry for player GUID "..Player:GetGUIDLow().."!")
-		query3 = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
-	end
-	points = query3:GetUInt32(0)
-	if (query1==nil) then
-		Player:SendBroadcastMessage("You must be in a guild to access the Alternate Advancement trainer!")
-	else
-		if (tonumber(query1:GetString(0)) == tonumber(query2:GetString(0))) then
-			AA.RenderMainMenu(Player)
-		else
-			Player:SendBroadcastMessage("Your guild does not own Tanuka'le Village!")
-		end
-	end
+	cat=0
 end
 	
-RegisterCreatureGossipEvent(818023, 1, AA.OnGossip)
+RegisterCreatureGossipEvent(25970, 1, AA.OnGossip)
      
     -- [[ MAIN MENU ]]
     function AA.RenderMainMenu(Player)

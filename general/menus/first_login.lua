@@ -83,6 +83,7 @@ function FL.RenderMainMenu(Player)
 				end)
 			end
 		end
+	CharDBExecute("INSERT INTO shard_stats (playerguid,str,agi,sta,inte,spi) VALUES ("..Player:GetGUIDLow()..","..Player:GetStat(0)..","..Player:GetStat(1)..","..Player:GetStat(2)..","..Player:GetStat(3)..","..Player:GetStat(4)..")")
 Frame:Send(Player)
 end
 
