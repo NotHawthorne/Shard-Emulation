@@ -10,11 +10,11 @@
     -- [[OnChat Trigger]]
 function AA.OnGossip(event, Player, unit)
 	local playerguid = Player:GetGUIDLow()
-	query3 = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
+	query3 = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..playerguid.."")
 	if (query3==nil) then
-		CharDBExecute("INSERT INTO shard_aa_points (playerguid,points) VALUES ("..Player:GetGUIDLow()..",0)")
-		Player:SendBroadcastMessage("Successfully created shard_aa_points entry for player GUID "..Player:GetGUIDLow().."!")
-		query3 = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..Player:GetGUIDLow().."")
+		CharDBExecute("INSERT INTO shard_aa_points (playerguid,points) VALUES ("..playerguid..",0)")
+		Player:SendBroadcastMessage("Successfully created shard_aa_points entry for player GUID "..playerguid.."!")
+		query3 = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..playerguid.."")
 	end
 	points = query3:GetUInt32(0)
 	AA.RenderMainMenu(Player)
