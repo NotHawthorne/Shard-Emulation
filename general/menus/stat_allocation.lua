@@ -194,6 +194,15 @@ function increase_agi(player, statpoints)
     CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints.." WHERE playerguid="..player:GetGUIDLow())
     CharDBExecute("UPDATE shard_stats SET agi="..stats["agi"].." WHERE playerguid="..player:GetGUIDLow())
     player:SendBroadcastMessage("You've increased your Agility by 1.")
+	speed = ((player:GetStat(1)/80))
+	
+	if (speed>0) then
+		ticker6=1
+		repeat
+			ticker6 = ((ticker6)+0.01)
+		until (ticker6>=speed)
+		player:SetSpeed(1, ticker6, true)
+	end
 end
 
 function decrease_agi(player, statpoints)
@@ -208,6 +217,15 @@ function decrease_agi(player, statpoints)
 			player:AddAura(7471, player)
 			ticker = ((ticker)+1)
 		until (ticker==stats["agi"])
+	end
+	speed = ((player:GetStat(1)/80))
+	
+	if (speed>0) then
+		ticker6=1
+		repeat
+			ticker6 = ((ticker6)+0.01)
+		until (ticker6>=speed)
+		player:SetSpeed(1, ticker6, true)
 	end
 end
 
