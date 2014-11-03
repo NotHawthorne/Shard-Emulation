@@ -37,17 +37,44 @@ function apply_allocation (event, player)
 	allocated_spi = statdb:GetUInt32(4)
 
 	ticker1 = 0
-	ticker2 = allocated_agi
-	ticker3 = allocated_sta
-	ticker4 = allocated_inte
-	ticker5 = allocated_spi
+	ticker2 = 0
+	ticker3 = 0
+	ticker4 = 0
+	ticker5 = 0
 
 	if (allocated_str>0) then
 		repeat
 			player:AddAura(7464, player)
 			ticker1 = ((ticker1)+1)
-			player:SendBroadcastMessage("[DEBUG]: +1 Strength!")
 		until (ticker1==allocated_str)
+	end
+	
+	if (allocated_agi>0) then
+		repeat
+			player:AddAura(7471, player)
+			ticker2 = ((ticker2)+1)
+		until (ticker2==allocated_agi)
+	end
+	
+	if (allocated_sta>0) then
+		repeat
+			player:AddAura(7477, player)
+			ticker3 = ((ticker3)+1)
+		until (ticker3==allocated_sta)
+	end
+	
+	if (allocated_inte>0) then
+		repeat
+			player:AddAura(7468, player)
+			ticker4 = ((ticker4)+1)
+		until (ticker4==allocated_sta)
+	end
+	
+	if (allocated_spi>0) then
+		repeat
+			player:AddAura(7474, player)
+			ticker5 = ((ticker5)+1)
+		until (ticker5==allocated_sta)
 	end
 end
 

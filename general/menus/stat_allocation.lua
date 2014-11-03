@@ -12,7 +12,7 @@ function init_stats(player)
     stats["str"] = statquery:GetUInt32(0)
     stats["agi"] = statquery:GetUInt32(1)
     stats["sta"] = statquery:GetUInt32(2)
-    stats["int"] = statquery:GetUInt32(3)
+    stats["inte"] = statquery:GetUInt32(3)
     stats["spi"] = statquery:GetUInt32(4)
 end
 
@@ -31,14 +31,14 @@ function SA.RenderMainMenu(player)
         {
             {"prompt1", "Allocate stat points.", 15, 185, 57.5, 0, 12},
             {"str", "Strength", 17, 120, 37.5, -70, 12},
-            {"agi", "Dexterity", 17, 120, 17.5, -69, 12},
-            {"sta", "Stamina", 17, 120, -2.5, -71.5, 12},
-            {"inte", "Intelligence", 17, 120, -22.5, -61.5, 12},
-            {"spi", "Wisdom", 17, 120, -42.5, -71.5, 12},
+            {"sta", "Stamina", 17, 120, 17.5, -71.5, 12},
+            {"agi", "Agility", 17, 120, -2.5, -77.5, 12},
+            {"inte", "Intellect", 17, 120, -22.5, -70, 12},
+            {"spi", "Spirit", 17, 120, -42.5, -80.5, 12},
 			{"str_value", ""..stats["str"].."", 17, 120, 37.5, 58.25, 12},
-			{"agi_value", ""..stats["agi"].."", 17, 120, 17.5, 58.25, 12},
-			{"sta_value", ""..stats["sta"].."", 17, 120, -2.5, 58.25, 12},
-			{"inte_value", ""..stats["int"].."", 17, 120, -22.5, 58.25, 12},
+			{"sta_value", ""..stats["sta"].."", 17, 120, 17.5, 58.25, 12},
+			{"agi_value", ""..stats["agi"].."", 17, 120, -2.5, 58.25, 12},
+			{"inte_value", ""..stats["inte"].."", 17, 120, -22.5, 58.25, 12},
 			{"spi_value", ""..stats["spi"].."", 17, 120, -42.5, 58.25, 12},
 			{"prompt2", "Available stat points: "..statpoints.."", 15, 185, -62.5, 0, 12},
         };
@@ -93,35 +93,72 @@ function SA.RenderMainMenu(player)
 			if (v[1]=="inc_str") and statpoints > 0 then
 				Frame:Hide(player)
 				Button:SetEvent("OnClick", function(self, event, player, Cache)
-					statpoints = statpoints - 1
-				    increase_str(player, statpoints)
-					SA.RenderMainMenu(player)
+				statpoints = statpoints - 1
+				increase_str(player, statpoints)
+				SA.RenderMainMenu(player)
 				end)
 			elseif (v[1]=="dec_str") and stats["str"] > 0  then
 				Frame:Hide(player)
 				Button:SetEvent("OnClick", function(self, event, player, Cache)
-					statpoints = statpoints + 1
-				    decrease_str(player, statpoints)
-					SA.RenderMainMenu(player)
+				statpoints = statpoints + 1
+				decrease_str(player, statpoints)
+				SA.RenderMainMenu(player)
 				end)
-			elseif (v[1]=="daggers") then
-				Button:SetEvent("OnClick", function(self, event, player, Cache)
-				player:AddItem(2092, 2)
+			elseif (v[1]=="inc_sta") and statpoints > 0 then
 				Frame:Hide(player)
-				player:SendBroadcastMessage("You obtained two Worn Daggers.")
+				Button:SetEvent("OnClick", function(self, event, player, Cache)
+				statpoints = statpoints - 1
+				increase_sta(player, statpoints)
+				SA.RenderMainMenu(player)
 				end)
-			elseif (v[1]=="staff") then
-				Button:SetEvent("OnClick", function(self, event, player, Cache)
-				player:AddItem(35, 1)
+			elseif (v[1]=="dec_sta") and stats["sta"] > 0  then
 				Frame:Hide(player)
-				player:SendBroadcastMessage("You obtained a Bent Staff.")
+				Button:SetEvent("OnClick", function(self, event, player, Cache)
+				statpoints = statpoints + 1
+				decrease_sta(player, statpoints)
+				SA.RenderMainMenu(player)
 				end)
-			elseif (v[1]=="bow") then
-				Button:SetEvent("OnClick", function(self, event, player, Cache)
-				player:AddItem(2504, 1)
-				player:AddItem(2512, 200)
+			elseif (v[1]=="inc_inte") and statpoints > 0 then
 				Frame:Hide(player)
-				player:SendBroadcastMessage("You obtained a Worn Shortbow and some arrows.")
+				Button:SetEvent("OnClick", function(self, event, player, Cache)
+				statpoints = statpoints - 1
+				increase_inte(player, statpoints)
+				SA.RenderMainMenu(player)
+				end)
+			elseif (v[1]=="dec_inte") and stats["inte"] > 0  then
+				Frame:Hide(player)
+				Button:SetEvent("OnClick", function(self, event, player, Cache)
+				statpoints = statpoints + 1
+				decrease_inte(player, statpoints)
+				SA.RenderMainMenu(player)
+				end)
+			elseif (v[1]=="inc_agi") and statpoints > 0 then
+				Frame:Hide(player)
+				Button:SetEvent("OnClick", function(self, event, player, Cache)
+				statpoints = statpoints - 1
+				increase_agi(player, statpoints)
+				SA.RenderMainMenu(player)
+				end)
+			elseif (v[1]=="dec_agi") and stats["agi"] > 0  then
+				Frame:Hide(player)
+				Button:SetEvent("OnClick", function(self, event, player, Cache)
+				statpoints = statpoints + 1
+				decrease_agi(player, statpoints)
+				SA.RenderMainMenu(player)
+				end)
+			elseif (v[1]=="inc_spi") and statpoints > 0 then
+				Frame:Hide(player)
+				Button:SetEvent("OnClick", function(self, event, player, Cache)
+				statpoints = statpoints - 1
+				increase_spi(player, statpoints)
+				SA.RenderMainMenu(player)
+				end)
+			elseif (v[1]=="dec_spi") and stats["spi"] > 0  then
+				Frame:Hide(player)
+				Button:SetEvent("OnClick", function(self, event, player, Cache)
+				statpoints = statpoints + 1
+				decrease_spi(player, statpoints)
+				SA.RenderMainMenu(player)
 				end)
 			end
 		end
@@ -142,6 +179,105 @@ function decrease_str(player, statpoints)
     CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints.." WHERE playerguid="..player:GetGUIDLow().."")
 	CharDBExecute("UPDATE shard_stats SET str="..stats["str"].." WHERE playerguid="..player:GetGUIDLow().."")
     player:SendBroadcastMessage("You've decreased your Strength by 1.")
+    ticker = 0
+	if (stats["str"]>0) then
+		repeat
+			player:AddAura(7464, player)
+			ticker = ((ticker)+1)
+		until (ticker==stats["str"])
+	end
+end
+
+function increase_agi(player, statpoints)
+    stats["agi"] = stats["agi"] + 1
+    player:AddAura(7471, player)
+    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints.." WHERE playerguid="..player:GetGUIDLow())
+    CharDBExecute("UPDATE shard_stats SET agi="..stats["agi"].." WHERE playerguid="..player:GetGUIDLow())
+    player:SendBroadcastMessage("You've increased your Agility by 1.")
+end
+
+function decrease_agi(player, statpoints)
+    stats["agi"] = stats["agi"] - 1
+    player:RemoveAura(7471, player)
+    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints.." WHERE playerguid="..player:GetGUIDLow().."")
+	CharDBExecute("UPDATE shard_stats SET agi="..stats["agi"].." WHERE playerguid="..player:GetGUIDLow().."")
+    player:SendBroadcastMessage("You've decreased your Agility by 1.")
+    ticker = 0
+	if (stats["agi"]>0) then
+		repeat
+			player:AddAura(7471, player)
+			ticker = ((ticker)+1)
+		until (ticker==stats["agi"])
+	end
+end
+
+function increase_sta(player, statpoints)
+    stats["sta"] = stats["sta"] + 1
+    player:AddAura(7477, player)
+    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints.." WHERE playerguid="..player:GetGUIDLow())
+    CharDBExecute("UPDATE shard_stats SET sta="..stats["sta"].." WHERE playerguid="..player:GetGUIDLow())
+    player:SendBroadcastMessage("You've increased your Stamina by 1.")
+end
+
+function decrease_sta(player, statpoints)
+    stats["sta"] = stats["sta"] - 1
+    player:RemoveAura(7477, player)
+    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints.." WHERE playerguid="..player:GetGUIDLow().."")
+	CharDBExecute("UPDATE shard_stats SET sta="..stats["sta"].." WHERE playerguid="..player:GetGUIDLow().."")
+    player:SendBroadcastMessage("You've decreased your Stamina by 1.")
+    ticker = 0
+	if (stats["sta"]>0) then
+		repeat
+			player:AddAura(7477, player)
+			ticker = ((ticker)+1)
+		until (ticker==stats["sta"])
+	end
+end
+
+function increase_inte(player, statpoints)
+    stats["inte"] = stats["inte"] + 1
+    player:AddAura(7468, player)
+    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints.." WHERE playerguid="..player:GetGUIDLow())
+    CharDBExecute("UPDATE shard_stats SET inte="..stats["inte"].." WHERE playerguid="..player:GetGUIDLow())
+    player:SendBroadcastMessage("You've increased your Intellect by 1.")
+end
+
+function decrease_inte(player, statpoints)
+    stats["inte"] = stats["inte"] - 1
+    player:RemoveAura(7468, player)
+    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints.." WHERE playerguid="..player:GetGUIDLow().."")
+	CharDBExecute("UPDATE shard_stats SET inte="..stats["inte"].." WHERE playerguid="..player:GetGUIDLow().."")
+    player:SendBroadcastMessage("You've decreased your Intellect by 1.")
+    ticker = 0
+	if (stats["inte"]>0) then
+		repeat
+			player:AddAura(7468, player)
+			ticker = ((ticker)+1)
+		until (ticker==stats["inte"])
+	end
+end
+
+function increase_spi(player, statpoints)
+    stats["spi"] = stats["spi"] + 1
+    player:AddAura(7474, player)
+    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints.." WHERE playerguid="..player:GetGUIDLow())
+    CharDBExecute("UPDATE shard_stats SET spi="..stats["spi"].." WHERE playerguid="..player:GetGUIDLow())
+    player:SendBroadcastMessage("You've increased your Spirit by 1.")
+end
+
+function decrease_spi(player, statpoints)
+    stats["spi"] = stats["spi"] - 1
+    player:RemoveAura(7474, player)
+    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints.." WHERE playerguid="..player:GetGUIDLow().."")
+	CharDBExecute("UPDATE shard_stats SET spi="..stats["spi"].." WHERE playerguid="..player:GetGUIDLow().."")
+    player:SendBroadcastMessage("You've decreased your Spirit by 1.")
+    ticker = 0
+	if (stats["spi"]>0) then
+		repeat
+			player:AddAura(7468, player)
+			ticker = ((ticker)+1)
+		until (ticker==stats["spi"])
+	end
 end
 
 RegisterPlayerEvent(13, stat_allocation)
