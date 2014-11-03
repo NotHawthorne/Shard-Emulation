@@ -1,16 +1,5 @@
 disable_for_gms = 1
 
-local function languagefix (event, player)
-	player:RemoveSpell(668, player)
-	player:LearnSpell(668, player)
-end
-
-local function register_stats (event, player)
-	CharDBExecute("INSERT INTO shard_aa_points (playerguid) VALUES ("..player:GetGUIDLow()..")")
-	base_statdb = WorldDBQuery("SELECT str, agi, sta, inte, spi FROM player_levelstats WHERE race="..player:GetRace().."")
-	CharDBExecute("INSERT INTO shard_stats (playerguid, str, agi, sta, inte, spi) VALUES ("..base_statdb:GetUInt32(0)..", "..base_statdb:GetUInt32(1)..", "..base_statdb:GetUInt32(2)..", "..base_statdb:GetUInt32(3)..", "..base_statdb:GetUInt32(4)..")")
-end
-
 local function multiboxing (event, player)
 	for k, v in ipairs(GetPlayersInWorld()) do
 		if(v:GetPlayerIP() == player:GetPlayerIP()) then -- check areas so we wont spam to the whole world
@@ -100,11 +89,9 @@ local function manaregen (event, player)
 	end
 end
 
-RegisterPlayerEvent(30, register_stats)
+
 RegisterPlayerEvent(3, apply_allocation)
 RegisterPlayerEvent(29, manaregen)
 RegisterPlayerEvent(13, manaregen)
 RegisterPlayerEvent(3, manaregen)
-RegisterPlayerEvent(3, languagefix)
 RegisterPlayerEvent(3, multiboxing)
-RegisterPlayerEvent(27, languagefix)
