@@ -8,7 +8,7 @@ pointgain = 6
 
 function init_stats(player)
     stats = {}
-    statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow())
+    statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
     stats["str"] = statquery:GetUInt32(0)
     stats["agi"] = statquery:GetUInt32(1)
     stats["sta"] = statquery:GetUInt32(2)
