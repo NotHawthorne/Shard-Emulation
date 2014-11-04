@@ -12,4 +12,4 @@ local function essence_implosion (event, player, spell)
 	else
 	end
 end
-RegisterPlayerEvent(5, essence_implosion)
+--RegisterPlayerEvent(5, essence_implosion)

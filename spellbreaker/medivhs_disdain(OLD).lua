@@ -4,4 +4,4 @@ local function silence (event, player, spell)
 	end
 	
 end
-RegisterPlayerEvent(5, silence)
+--RegisterPlayerEvent(5, silence)

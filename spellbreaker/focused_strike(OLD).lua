@@ -7,4 +7,4 @@ local function focused_strike (event, player, spell)
 	else
 	end
 end
-RegisterPlayerEvent(5, focused_strike)
+--RegisterPlayerEvent(5, focused_strike)
