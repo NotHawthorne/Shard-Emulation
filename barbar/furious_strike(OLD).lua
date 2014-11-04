@@ -4,4 +4,4 @@ local function furious_strike (event, player, spell)
 	end
 	
 end
-RegisterPlayerEvent(5, furious_strike)
+--RegisterPlayerEvent(5, furious_strike)

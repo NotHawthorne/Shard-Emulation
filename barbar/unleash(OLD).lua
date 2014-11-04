@@ -27,4 +27,4 @@ local function unleash (event, player, spell)
 	else
 	end
 end
-RegisterPlayerEvent(5, unleash)
+--RegisterPlayerEvent(5, unleash)
