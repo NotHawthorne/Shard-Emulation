@@ -24,6 +24,7 @@ function FL.RenderMainMenu(Player)
         Frame:SetCantMove(false)
         Frame:SetHeight(200)
         Frame:SetWidth(200)
+		Frame:SetTexture("Interface/AchievementFrame/UI-Achievement-Parchment-Horizontal-Desaturated")
 		
          -- [[ RENDER TEXT BOXES ]]
         for k, v in pairs(FL.TextBoxes) do

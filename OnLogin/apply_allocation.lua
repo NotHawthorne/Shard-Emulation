@@ -57,6 +57,8 @@ function apply_allocation (event, player)
 		until (ticker6>=speed)
 		player:SetSpeed(1, ticker6, true)
 	end
+	
+	player:AddAura(7711, player)			--Modded in the DBC files, this is the auto attack energy aura now.
 		
 end
 

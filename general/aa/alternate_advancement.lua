@@ -58,6 +58,7 @@ RegisterCreatureGossipEvent(25970, 1, AA.OnGossip)
         Frame:SetCantMove(false)
         Frame:SetHeight(250)
         Frame:SetWidth(200)
+		Frame:SetTexture("Interface/AchievementFrame/UI-Achievement-Parchment-Horizontal-Desaturated")
            
         for k, v in pairs(AA.MainButtons) do
             local Button = Frame:CreateButton(AA.Prefix..v)
@@ -523,6 +524,7 @@ RegisterCreatureGossipEvent(25970, 1, AA.OnGossip)
                 Frame:SetCantMove(false)
                 Frame:SetHeight(AA[Type]["Height"])
                 Frame:SetWidth(AA[Type]["Width"])
+				Frame:SetTexture("Interface/AchievementFrame/UI-Achievement-Parchment-Horizontal-Desaturated")
                    
                 -- [[ RENDER BUTTONS ]]
                 for k, v in pairs(AA[Type]["Buttons"]) do
