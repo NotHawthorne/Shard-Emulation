@@ -200,14 +200,14 @@ require("AIO")
 	
     local FrameUI = AIO:CreateMsg()
     FrameUI:Append(Frame)
-
-    player:SendBroadcastMessage("[DEBUG]: SideBar activated.")
 	
     local TrainingFrameUI = AIO:CreateMsg()
     TrainingFrameUI:Append(TrainingFrame)
 
 
 function SidePanel(event, player)
+    player:SendBroadcastMessage("[DEBUG]: SideBar activated.")
+
     -- Send Frame
     Frame:Send(player)
     Frame:Clear()
@@ -216,5 +216,5 @@ function SidePanel(event, player)
     TrainingFrame:Send(player)
     TrainingFrame:Clear()
 end
+
 RegisterPlayerEvent(3, SidePanel)
-RegisterPlayerEvent(18, SidePanel)
