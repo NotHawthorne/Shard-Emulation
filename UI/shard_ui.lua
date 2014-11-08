@@ -32,7 +32,7 @@ require("AIO")
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
     TrainingFrame:Hide()
-	
+
     local TrainingButton = AIO:CreateFrame("Button", "TrainingButton", Frame)
     TrainingButton:SetSize(32, 32)
     TrainingButton:SetPoint("CENTER", 0, 67)
@@ -51,7 +51,7 @@ require("AIO")
         GameTooltip:Hide()
     ]]
     TrainingButton:SetScript("OnLeave", AIO:ToFunction(TrainingsButton_Tooltip_OnLeave))
-	
+
     local TestButton1 = AIO:CreateFrame("Button", "TestButton1", Frame)
     TestButton1:SetSize(32, 32)
     TestButton1:SetPoint("CENTER", 0, 33)
@@ -59,7 +59,7 @@ require("AIO")
     TestButton1:SetNormalTexture("Interface/ICONS/Ability_Warrior_StrengthOfArms")
     TestButton1:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
     TestButton1:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
- 
+
     local TestButton2 = AIO:CreateFrame("Button", "TestButton2", Frame)
     TestButton2:SetSize(32, 32)
     TestButton2:SetPoint("CENTER", 0, -1)
@@ -67,7 +67,7 @@ require("AIO")
     TestButton2:SetNormalTexture("Interface/ICONS/Spell_Arcane_Rune")
     TestButton2:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
     TestButton2:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
- 
+
     local TestButton3 = AIO:CreateFrame("Button", "TestButton3", Frame)
     TestButton3:SetSize(32, 32)
     TestButton3:SetPoint("CENTER", 0, -35)
@@ -75,7 +75,7 @@ require("AIO")
     TestButton3:SetNormalTexture("Interface/ICONS/Achievement_Dungeon_Outland_Dungeon_Hero")
     TestButton3:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
     TestButton3:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
- 
+
     local TestButton4 = AIO:CreateFrame("Button", "TestButton4", Frame)
     TestButton4:SetSize(32, 32)
     TestButton4:SetPoint("CENTER", 0, -69)
@@ -83,14 +83,14 @@ require("AIO")
     TestButton4:SetNormalTexture("Interface/ICONS/Achievement_Dungeon_PlagueWing")
     TestButton4:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
     TestButton4:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
-	
+
 --[[TRAINING FRAME UI]]--
 
     local TrainingFrame_CloseButton = AIO:CreateFrame("Button", "TrainingFrame_CloseButton", TrainingFrame, "UIPanelCloseButton")
     TrainingFrame_CloseButton:SetPoint("TOPRIGHT", -5, -5)
     TrainingFrame_CloseButton:SetEnabledMouse(true)
     TrainingFrame_CloseButton:SetSize(27, 27)
-	
+
     local TrainingFrame_TitleBar = AIO:CreateFrame("Frame", "TrainingFrame_TitleBar", TrainingFrame, nil)
     TrainingFrame_TitleBar:SetSize(100, 25)
     TrainingFrame_TitleBar:SetBackdrop({
@@ -102,7 +102,7 @@ require("AIO")
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
     TrainingFrame_TitleBar:SetPoint("TOP", 0, 9)
-	
+
     local TrainingFrame_TitleText = TrainingFrame_TitleBar:CreateFontString("TrainingFrame_TitleText")
     TrainingFrame_TitleText:SetFont("Fonts\\FRIZQT__.TTF", 13)
     TrainingFrame_TitleText:SetSize(190, 5)
@@ -120,13 +120,13 @@ require("AIO")
         tileSize = 16,
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
-	
+
     local TrainingFrame_CategoryText = TrainingFrame_CategoryPanel:CreateFontString("TrainingFrame_CategoryText")
     TrainingFrame_CategoryText:SetFont("Fonts\\FRIZQT__.TTF", 11)
     TrainingFrame_CategoryText:SetSize(190, 5)
     TrainingFrame_CategoryText:SetPoint("TOP", 0, 13)
     TrainingFrame_CategoryText:SetText("Category")
-	
+
     local TrainingFrame_SpellPanel = AIO:CreateFrame("Frame", "TrainingFrame_SpellPanel", TrainingFrame, nil)
     TrainingFrame_SpellPanel:SetSize(150, 250)
     TrainingFrame_SpellPanel:SetPoint("CENTER", 0, -15)
@@ -138,19 +138,19 @@ require("AIO")
         tileSize = 16,
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
-	
+
     local TrainingFrame_SpellText = TrainingFrame_SpellPanel:CreateFontString("TrainingFrame_SpellText")
     TrainingFrame_SpellText:SetFont("Fonts\\FRIZQT__.TTF", 11)
     TrainingFrame_SpellText:SetSize(190, 5)
     TrainingFrame_SpellText:SetPoint("TOP", 0, 13)
     TrainingFrame_SpellText:SetText("Ability")
-	
+
     local TrainingFrame_DescriptionText = TrainingFrame_SpellPanel:CreateFontString("TrainingFrame_DescriptionText")
     TrainingFrame_DescriptionText:SetFont("Fonts\\FRIZQT__.TTF", 11)
     TrainingFrame_DescriptionText:SetSize(190, 5)
     TrainingFrame_DescriptionText:SetPoint("TOP", 160, 13)
     TrainingFrame_DescriptionText:SetText("Ability Description")
-	
+
     local TrainingFrame_IconPanel = AIO:CreateFrame("Frame", "TrainingFrame_IconPanel", TrainingFrame, nil)
     TrainingFrame_IconPanel:SetSize(40, 40)
     TrainingFrame_IconPanel:SetPoint("RIGHT", -10, 90)
@@ -162,14 +162,14 @@ require("AIO")
         tileSize = 16,
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
-	
 
-    --[[local spell_list={
+
+    local spell_list={
     --{"number of button", SetPoint, XOffset, YOffset, text}
         {"1", "CENTER", 0, 92.5, "Holy Bonds"},
         {"2", "CENTER", 0, 72.5, "Smite"}
     };
-	
+
     for k, v in pairs(spell_list) do
         local Register_Spell_Button = AIO:CreateFrame("Button", v[1], TrainingFrame, nil)
         Register_Spell_Button:SetSize(137, 13)
@@ -178,29 +178,16 @@ require("AIO")
         Register_Spell_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
         Register_Spell_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
         
-        local Register_Spell_Text = Register_Spell_Button:CreateFontString(v[1])
+        local Register_Spell_Text = Register_Spell_Button:CreateFontString("Spell_Text"..v[1])
         Register_Spell_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
         Register_Spell_Text:SetSize(137, 5)
         Register_Spell_Text:SetPoint("CENTER", 0, 0)
         Register_Spell_Text:SetText(v[5])
-    end]]
-	
-    local TestSpellButton = AIO:CreateFrame("Button", "TestSpellButton", TrainingFrame, nil)
-    TestSpellButton:SetSize(137, 13)
-    TestSpellButton:SetPoint("CENTER", 0, 92.5)
-    TestSpellButton:SetEnabledMouse(true)
-    TestSpellButton:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
-    TestSpellButton:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
-	
-    local TestSpellText = TestSpellButton:CreateFontString("TestSpellText")
-    TestSpellText:SetFont("Fonts\\FRIZQT__.TTF", 11)
-    TestSpellText:SetSize(137, 5)
-    TestSpellText:SetPoint("CENTER", 0, 0)
-    TestSpellText:SetText("Holy Bonds")
-	
+    end
+
     local FrameUI = AIO:CreateMsg()
     FrameUI:Append(Frame)
-	
+
     local TrainingFrameUI = AIO:CreateMsg()
     TrainingFrameUI:Append(TrainingFrame)
 
@@ -208,13 +195,19 @@ require("AIO")
 function SidePanel(event, player)
     player:SendBroadcastMessage("[DEBUG]: SideBar activated.")
 
+    FrameUI:SendIgnoreIf(Frame, player)
+    TrainingFrameUI:SendIgnoreIf(TrainingFrame, player)
+
     -- Send Frame
     Frame:Send(player)
     Frame:Clear()
+    Frame:Show()
 
     -- Send Frame Children
     TrainingFrame:Send(player)
     TrainingFrame:Clear()
+
+    return false
 end
 
 RegisterPlayerEvent(3, SidePanel)
