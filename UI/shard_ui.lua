@@ -32,6 +32,21 @@ require("AIO")
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
     TrainingFrame:Hide()
+	
+	local StatFrame = AIO:CreateFrame("Frame", "StatFrame", "UIParent", nil)
+    StatFrame:SetSize(200, 300)
+    StatFrame:SetMovable(true)
+    StatFrame:SetEnabledMouse(true)
+    StatFrame:RegisterForDrag("LeftButton")
+    StatFrame:SetPoint("CENTER")
+    StatFrame:SetClampedToScreen(true)
+    StatFrame:SetBackdrop({
+        bgFile = "Interface/AchievementFrame/UI-Achievement-Parchment-Horizontal",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Gold-Border",
+        edgeSize = 20,
+        insets = { left = 5, right = 5, top = 5, bottom = 5 }
+    })
+    StatFrame:Hide()
 
     local TrainingButton = AIO:CreateFrame("Button", "TrainingButton", Frame)
     TrainingButton:SetSize(32, 32)
@@ -40,7 +55,7 @@ require("AIO")
     TrainingButton:SetNormalTexture("Interface/ICONS/INV_Misc_Book_11")
     TrainingButton:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
     TrainingButton:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
-    TrainingButton:SetScript("OnMouseUp", AIO:ToFunction("TrainingFrame:Show()"))
+    TrainingButton:SetScript("OnMouseUp", AIO:ToFunction("TrainingFrame:Show() StatFrame:Hide()"))
     local TrainingsButton_Tooltip_OnEnter = [[
         GameTooltip:SetOwner(select(1, ...), "ANCHOR_RIGHT")
         GameTooltip:SetText("|cffFFFFFFCharacter Advancement|r\nLearn new skills, or allocate skill points\nto improve existing ones.")
@@ -52,13 +67,25 @@ require("AIO")
     ]]
     TrainingButton:SetScript("OnLeave", AIO:ToFunction(TrainingsButton_Tooltip_OnLeave))
 
-    local TestButton1 = AIO:CreateFrame("Button", "TestButton1", Frame)
-    TestButton1:SetSize(32, 32)
-    TestButton1:SetPoint("CENTER", 0, 33)
-    TestButton1:SetEnabledMouse(true)
-    TestButton1:SetNormalTexture("Interface/ICONS/Ability_Warrior_StrengthOfArms")
-    TestButton1:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
-    TestButton1:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+    local StatAllocationButton = AIO:CreateFrame("Button", "StatAllocationButton", Frame)
+    StatAllocationButton:SetSize(32, 32)
+    StatAllocationButton:SetPoint("CENTER", 0, 33)
+    StatAllocationButton:SetEnabledMouse(true)
+    StatAllocationButton:SetNormalTexture("Interface/ICONS/Ability_Warrior_StrengthOfArms")
+    StatAllocationButton:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
+    StatAllocationButton:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+    StatAllocationButton:SetScript("OnMouseUp", AIO:ToFunction("StatFrame:Show() TrainingFrame:Hide()"))
+	local StatAllocationButton_Tooltip_OnEnter = [[
+        GameTooltip:SetOwner(select(1, ...), "ANCHOR_RIGHT")
+        GameTooltip:SetText("|cffFFFFFFStat Allocation|r\nManage allocation of your attribute\npoints.")
+        GameTooltip:Show()
+    ]]
+    StatAllocationButton:SetScript("OnEnter", AIO:ToFunction(StatAllocationButton_Tooltip_OnEnter))
+    local StatAllocationButton_Tooltip_OnLeave = [[
+        GameTooltip:Hide()
+    ]]
+    StatAllocationButton:SetScript("OnLeave", AIO:ToFunction(StatAllocationButton_Tooltip_OnLeave))
+
 
     local TestButton2 = AIO:CreateFrame("Button", "TestButton2", Frame)
     TestButton2:SetSize(32, 32)
@@ -162,63 +189,115 @@ require("AIO")
         tileSize = 16,
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
+	--[[DEFINE SPELL TRAINING FRAMES]]--
+		local HolyBonds_Icon = AIO:CreateFrame("Button", "HolyBonds_Icon", TrainingFrame, nil)
+		HolyBonds_Icon:SetSize(32, 32)
+		HolyBonds_Icon:SetPoint("RIGHT", -14, 90)
+		HolyBonds_Icon:SetToplevel(true)
+		HolyBonds_Icon:SetClampedToScreen(true)
+		HolyBonds_Icon:SetBackdrop({
+			bgFile = "Interface/ICONS/Spell_Nature_Slow.png"
+		})
+		HolyBonds_Icon:Hide()
 	
-	local category_list={
-		{"liturgy", "LEFT", 16, 92.5, "Liturgy"},
-		{"bloodcraft", "LEFT", 16, 72.5, "Bloodcraft"}
-	}
-	
-    local spell_list={
-        {"holybonds", "CENTER", 0, 92.5, "Holy Bonds", "liturgy"},
-        {"smite", "CENTER", 0, 72.5, "Smite", "liturgy"},
-		{"bloodbolt", "CENTER", 0, 92.5, "Bloodbolt", "bloodcraft"}
-    };
-	
-    for k, v in pairs(category_list) do
-        local Register_Category_Button = AIO:CreateFrame("Button", v[1], TrainingFrame, nil)
-        Register_Category_Button:SetSize(137, 13)
-        Register_Category_Button:SetPoint(v[2], v[3], v[4])
-        Register_Category_Button:SetEnabledMouse(true)
-        Register_Category_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
-        Register_Category_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
-		local Category = v[1]
-		local Category_Button_OnClick = [[
-		for k, v in pairs(spell_list) do
-			if (Category==v[6]) then
-				local Register_Spell_Button = AIO:CreateFrame("Button", v[1], TrainingFrame, nil)
-				Register_Spell_Button:SetSize(137, 13)
-				Register_Spell_Button:SetPoint(v[2], v[3], v[4])
-				Register_Spell_Button:SetEnabledMouse(true)
-				Register_Spell_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
-				Register_Spell_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
-        
-				local Register_Spell_Text = Register_Spell_Button:CreateFontString("Spell_Text"..v[1])
-				Register_Spell_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
-				Register_Spell_Text:SetSize(137, 5)
-				Register_Spell_Text:SetPoint("CENTER", 0, 0)
-				Register_Spell_Text:SetText(v[5])
+	--[[DEFINE SPELL SELECTION BUTTONS]]--
+		--Holy Bonds
+        local HolyBonds_Button = AIO:CreateFrame("Button", "HolyBonds_Button", TrainingFrame, nil)
+        HolyBonds_Button:SetSize(137, 13)
+        HolyBonds_Button:SetPoint("TOP", 0, -50)
+        HolyBonds_Button:SetEnabledMouse(true)
+        HolyBonds_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        HolyBonds_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+		HolyBonds_Button:SetScript("OnMouseUp", AIO:ToFunction([[
+		HolyBonds_Icon:Show()
+		]]))
+        local HolyBonds_Text = HolyBonds_Button:CreateFontString("HolyBonds_Text")
+        HolyBonds_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+        HolyBonds_Text:SetSize(137, 5)
+        HolyBonds_Text:SetPoint("CENTER", 0, 0)
+        HolyBonds_Text:SetText("Holy Bonds")
+		HolyBonds_Text:Hide()
+		HolyBonds_Button:Hide()
 				
-				Register_Spell_Button:Show()
-				Register_Spell_Text:Show()
-			end
-		end
-		]]
+		--Smite
+        local Smite_Button = AIO:CreateFrame("Button", "Smite_Button", TrainingFrame, nil)
+        Smite_Button:SetSize(137, 13)
+        Smite_Button:SetPoint("TOP", 0, -65)
+        Smite_Button:SetEnabledMouse(true)
+        Smite_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        Smite_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+        local Smite_Text = Smite_Button:CreateFontString("Smite_Text")
+        Smite_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+        Smite_Text:SetSize(137, 5)
+        Smite_Text:SetPoint("CENTER", 0, 0)
+        Smite_Text:SetText("Smite")
+		Smite_Text:Hide()
+		Smite_Button:Hide()
 		
-		Register_Category_Button:SetScript("OnMouseUp", AIO:ToFunction(Category_Button_OnClick))
-        
-        local Register_Category_Text = Register_Category_Button:CreateFontString("Category_Text"..v[1])
-        Register_Category_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
-        Register_Category_Text:SetSize(137, 5)
-        Register_Category_Text:SetPoint("CENTER", 0, 0)
-        Register_Category_Text:SetText(v[5])
-    end
+		--Bloodbolt
+        local Bloodbolt_Button = AIO:CreateFrame("Button", "Bloodbolt_Button", TrainingFrame, nil)
+        Bloodbolt_Button:SetSize(137, 13)
+        Bloodbolt_Button:SetPoint("TOP", 0, -50)
+        Bloodbolt_Button:SetEnabledMouse(true)
+        Bloodbolt_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        Bloodbolt_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+        local Bloodbolt_Text = Bloodbolt_Button:CreateFontString("Bloodbolt_Text")
+        Bloodbolt_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+        Bloodbolt_Text:SetSize(137, 5)
+        Bloodbolt_Text:SetPoint("CENTER", 0, 0)
+        Bloodbolt_Text:SetText("Bloodbolt")
+		Bloodbolt_Text:Hide()
+		Bloodbolt_Button:Hide()
+		
+	--[[DEFINE CATEGORY SELECTION BUTTONS]]
+		--Liturgy
+        local Liturgy_Button = AIO:CreateFrame("Button", "Liturgy_Button", TrainingFrame, nil)
+        Liturgy_Button:SetSize(137, 13)
+        Liturgy_Button:SetPoint("LEFT", 16, 92.5)
+        Liturgy_Button:SetEnabledMouse(true)
+        Liturgy_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        Liturgy_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+		Liturgy_Button:SetScript("OnMouseUp", AIO:ToFunction([[
+		HolyBonds_Text:Show() HolyBonds_Button:Show()
+		Smite_Text:Show() Smite_Button:Show()
+		]]))
+        local Liturgy_Text = Liturgy_Button:CreateFontString("Liturgy_Text")
+        Liturgy_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+        Liturgy_Text:SetSize(137, 5)
+        Liturgy_Text:SetPoint("CENTER", 0, 0)
+        Liturgy_Text:SetText("Liturgy")
+		
+		--Bloodcraft
+        local Bloodcraft_Button = AIO:CreateFrame("Button", "Bloodcraft_Button", TrainingFrame, nil)
+        Bloodcraft_Button:SetSize(137, 13)
+        Bloodcraft_Button:SetPoint("LEFT", 16, 77.5)
+        Bloodcraft_Button:SetEnabledMouse(true)
+        Bloodcraft_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        Bloodcraft_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+		Bloodcraft_Button:SetScript("OnMouseUp", AIO:ToFunction([[
+		Bloodbolt_Button:Show() Bloodbolt_Text:Show()
+		]]))
+        local Bloodcraft_Text = Bloodcraft_Button:CreateFontString("Bloodcraft_Text")
+        Bloodcraft_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+        Bloodcraft_Text:SetSize(137, 5)
+        Bloodcraft_Text:SetPoint("CENTER", 0, 0)
+        Bloodcraft_Text:SetText("Bloodcraft")
+
+--[[STAT ALLOCATION UI]]--
+    local StatFrame_CloseButton = AIO:CreateFrame("Button", "StatFrame_CloseButton", StatFrame, "UIPanelCloseButton")
+    StatFrame_CloseButton:SetPoint("TOPRIGHT", -5, -5)
+    StatFrame_CloseButton:SetEnabledMouse(true)
+    StatFrame_CloseButton:SetSize(27, 27)
 
     local FrameUI = AIO:CreateMsg()
     FrameUI:Append(Frame)
 
     local TrainingFrameUI = AIO:CreateMsg()
     TrainingFrameUI:Append(TrainingFrame)
-
+	
+    local StatFrameUI = AIO:CreateMsg()
+    TrainingFrameUI:Append(StatFrame)
+	
 
 function SidePanel(event, player)
     player:SendBroadcastMessage("[DEBUG]: SideBar activated.")
@@ -239,3 +318,4 @@ function SidePanel(event, player)
 end
 
 RegisterPlayerEvent(3, SidePanel)
+RegisterPlayerEvent(18, SidePanel)
