@@ -162,27 +162,55 @@ require("AIO")
         tileSize = 16,
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
-
-
+	
+	local category_list={
+		{"liturgy", "LEFT", 16, 92.5, "Liturgy"},
+		{"bloodcraft", "LEFT", 16, 72.5, "Bloodcraft"}
+	}
+	
     local spell_list={
-    --{"number of button", SetPoint, XOffset, YOffset, text}
-        {"1", "CENTER", 0, 92.5, "Holy Bonds"},
-        {"2", "CENTER", 0, 72.5, "Smite"}
+        {"holybonds", "CENTER", 0, 92.5, "Holy Bonds", "liturgy"},
+        {"smite", "CENTER", 0, 72.5, "Smite", "liturgy"},
+		{"bloodbolt", "CENTER", 0, 92.5, "Bloodbolt", "bloodcraft"}
     };
-
-    for k, v in pairs(spell_list) do
-        local Register_Spell_Button = AIO:CreateFrame("Button", v[1], TrainingFrame, nil)
-        Register_Spell_Button:SetSize(137, 13)
-        Register_Spell_Button:SetPoint(v[2], v[3], v[4])
-        Register_Spell_Button:SetEnabledMouse(true)
-        Register_Spell_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
-        Register_Spell_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+	
+    for k, v in pairs(category_list) do
+        local Register_Category_Button = AIO:CreateFrame("Button", v[1], TrainingFrame, nil)
+        Register_Category_Button:SetSize(137, 13)
+        Register_Category_Button:SetPoint(v[2], v[3], v[4])
+        Register_Category_Button:SetEnabledMouse(true)
+        Register_Category_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        Register_Category_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+		local Category = v[1]
+		local Category_Button_OnClick = [[
+		for k, v in pairs(spell_list) do
+			if (Category==v[6]) then
+				local Register_Spell_Button = AIO:CreateFrame("Button", v[1], TrainingFrame, nil)
+				Register_Spell_Button:SetSize(137, 13)
+				Register_Spell_Button:SetPoint(v[2], v[3], v[4])
+				Register_Spell_Button:SetEnabledMouse(true)
+				Register_Spell_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+				Register_Spell_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
         
-        local Register_Spell_Text = Register_Spell_Button:CreateFontString("Spell_Text"..v[1])
-        Register_Spell_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
-        Register_Spell_Text:SetSize(137, 5)
-        Register_Spell_Text:SetPoint("CENTER", 0, 0)
-        Register_Spell_Text:SetText(v[5])
+				local Register_Spell_Text = Register_Spell_Button:CreateFontString("Spell_Text"..v[1])
+				Register_Spell_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+				Register_Spell_Text:SetSize(137, 5)
+				Register_Spell_Text:SetPoint("CENTER", 0, 0)
+				Register_Spell_Text:SetText(v[5])
+				
+				Register_Spell_Button:Show()
+				Register_Spell_Text:Show()
+			end
+		end
+		]]
+		
+		Register_Category_Button:SetScript("OnMouseUp", AIO:ToFunction(Category_Button_OnClick))
+        
+        local Register_Category_Text = Register_Category_Button:CreateFontString("Category_Text"..v[1])
+        Register_Category_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+        Register_Category_Text:SetSize(137, 5)
+        Register_Category_Text:SetPoint("CENTER", 0, 0)
+        Register_Category_Text:SetText(v[5])
     end
 
     local FrameUI = AIO:CreateMsg()
