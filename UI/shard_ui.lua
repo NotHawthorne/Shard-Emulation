@@ -1,39 +1,37 @@
 --Sidebar
 require("AIO")
 
-function SidePanel(event, player)
-
 --[[STATIC SIDEBAR]]--
-	local Frame = AIO:CreateFrame("Frame", "FrameTest", "UIParent", nil)
-	Frame:SetSize(42, 179)
-	Frame:SetMovable(false)
-	Frame:SetEnabledMouse(true)
-	Frame:RegisterForDrag("LeftButton")
-	Frame:SetPoint("RIGHT")
-	Frame:SetClampedToScreen(true)
-	Frame:SetBackdrop({
-		bgFile = "Interface/DialogFrame/UI-DialogBox-Background-Dark",
-		edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
-		tile = true,
-		edgeSize = 10,
-		insets = { left = 1, right = 1, top = 1, bottom = 1 }
+    local Frame = AIO:CreateFrame("Frame", "FrameTest", "UIParent", nil)
+    Frame:SetSize(42, 179)
+    Frame:SetMovable(false)
+    Frame:SetEnabledMouse(true)
+    Frame:RegisterForDrag("LeftButton")
+    Frame:SetPoint("RIGHT")
+    Frame:SetClampedToScreen(true)
+    Frame:SetBackdrop({
+        bgFile = "Interface/DialogFrame/UI-DialogBox-Background-Dark",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+        tile = true,
+        edgeSize = 10,
+        insets = { left = 1, right = 1, top = 1, bottom = 1 }
     })	
 
 --[[TRAINING FRAME]]--
-	local TrainingFrame = AIO:CreateFrame("Frame", "TrainingFrame", "UIParent", nil)
-	TrainingFrame:SetSize(500, 300)
-	TrainingFrame:SetMovable(true)
-	TrainingFrame:SetEnabledMouse(true)
-	TrainingFrame:RegisterForDrag("LeftButton")
-	TrainingFrame:SetPoint("CENTER")
-	TrainingFrame:SetClampedToScreen(true)
-	TrainingFrame:SetBackdrop({
-		bgFile = "Interface/AchievementFrame/UI-Achievement-Parchment-Horizontal",
-		edgeFile = "Interface/DialogFrame/UI-DialogBox-Gold-Border",
-		edgeSize = 20,
-		insets = { left = 5, right = 5, top = 5, bottom = 5 }
-	})
-	TrainingFrame:Hide()
+    local TrainingFrame = AIO:CreateFrame("Frame", "TrainingFrame", "UIParent", nil)
+    TrainingFrame:SetSize(500, 300)
+    TrainingFrame:SetMovable(true)
+    TrainingFrame:SetEnabledMouse(true)
+    TrainingFrame:RegisterForDrag("LeftButton")
+    TrainingFrame:SetPoint("CENTER")
+    TrainingFrame:SetClampedToScreen(true)
+    TrainingFrame:SetBackdrop({
+        bgFile = "Interface/AchievementFrame/UI-Achievement-Parchment-Horizontal",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Gold-Border",
+        edgeSize = 20,
+        insets = { left = 5, right = 5, top = 5, bottom = 5 }
+    })
+    TrainingFrame:Hide()
 	
     local TrainingButton = AIO:CreateFrame("Button", "TrainingButton", Frame)
     TrainingButton:SetSize(32, 32)
@@ -88,10 +86,10 @@ function SidePanel(event, player)
 	
 --[[TRAINING FRAME UI]]--
 
-	local TrainingFrame_CloseButton = AIO:CreateFrame("Button", "TrainingFrame_CloseButton", TrainingFrame, "UIPanelCloseButton")
-	TrainingFrame_CloseButton:SetPoint("TOPRIGHT", -5, -5)
-	TrainingFrame_CloseButton:SetEnabledMouse(true)
-	TrainingFrame_CloseButton:SetSize(27, 27)
+    local TrainingFrame_CloseButton = AIO:CreateFrame("Button", "TrainingFrame_CloseButton", TrainingFrame, "UIPanelCloseButton")
+    TrainingFrame_CloseButton:SetPoint("TOPRIGHT", -5, -5)
+    TrainingFrame_CloseButton:SetEnabledMouse(true)
+    TrainingFrame_CloseButton:SetSize(27, 27)
 	
     local TrainingFrame_TitleBar = AIO:CreateFrame("Frame", "TrainingFrame_TitleBar", TrainingFrame, nil)
     TrainingFrame_TitleBar:SetSize(100, 25)
@@ -111,7 +109,7 @@ function SidePanel(event, player)
     TrainingFrame_TitleText:SetPoint("CENTER", 0, 0)
     TrainingFrame_TitleText:SetText("|cffFFC125Training|r")
 
-	local TrainingFrame_CategoryPanel = AIO:CreateFrame("Frame", "TrainingFrame_CategoryPanel", TrainingFrame, nil)
+    local TrainingFrame_CategoryPanel = AIO:CreateFrame("Frame", "TrainingFrame_CategoryPanel", TrainingFrame, nil)
     TrainingFrame_CategoryPanel:SetSize(150, 250)
     TrainingFrame_CategoryPanel:SetPoint("LEFT", 10, -15)
     TrainingFrame_CategoryPanel:SetBackdrop({
@@ -129,7 +127,7 @@ function SidePanel(event, player)
     TrainingFrame_CategoryText:SetPoint("TOP", 0, 13)
     TrainingFrame_CategoryText:SetText("Category")
 	
-	local TrainingFrame_SpellPanel = AIO:CreateFrame("Frame", "TrainingFrame_SpellPanel", TrainingFrame, nil)
+    local TrainingFrame_SpellPanel = AIO:CreateFrame("Frame", "TrainingFrame_SpellPanel", TrainingFrame, nil)
     TrainingFrame_SpellPanel:SetSize(150, 250)
     TrainingFrame_SpellPanel:SetPoint("CENTER", 0, -15)
     TrainingFrame_SpellPanel:SetBackdrop({
@@ -153,7 +151,7 @@ function SidePanel(event, player)
     TrainingFrame_DescriptionText:SetPoint("TOP", 160, 13)
     TrainingFrame_DescriptionText:SetText("Ability Description")
 	
-	local TrainingFrame_IconPanel = AIO:CreateFrame("Frame", "TrainingFrame_IconPanel", TrainingFrame, nil)
+    local TrainingFrame_IconPanel = AIO:CreateFrame("Frame", "TrainingFrame_IconPanel", TrainingFrame, nil)
     TrainingFrame_IconPanel:SetSize(40, 40)
     TrainingFrame_IconPanel:SetPoint("RIGHT", -10, 90)
     TrainingFrame_IconPanel:SetBackdrop({
@@ -166,26 +164,26 @@ function SidePanel(event, player)
     })
 	
 
-	--[[local spell_list={
+    --[[local spell_list={
     --{"number of button", SetPoint, XOffset, YOffset, text}
-	{"1", "CENTER", 0, 92.5, "Holy Bonds"},
-	{"2", "CENTER", 0, 72.5, "Smite"}
-	};
+        {"1", "CENTER", 0, 92.5, "Holy Bonds"},
+        {"2", "CENTER", 0, 72.5, "Smite"}
+    };
 	
-	for k, v in pairs(spell_list) do
-		local Register_Spell_Button = AIO:CreateFrame("Button", v[1], TrainingFrame, nil)
-		Register_Spell_Button:SetSize(137, 13)
-		Register_Spell_Button:SetPoint(v[2], v[3], v[4])
-		Register_Spell_Button:SetEnabledMouse(true)
-		Register_Spell_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
-		Register_Spell_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
-		
-		local Register_Spell_Text = Register_Spell_Button:CreateFontString(v[1])
-		Register_Spell_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
-		Register_Spell_Text:SetSize(137, 5)
-		Register_Spell_Text:SetPoint("CENTER", 0, 0)
-		Register_Spell_Text:SetText(v[5])
-	end]]
+    for k, v in pairs(spell_list) do
+        local Register_Spell_Button = AIO:CreateFrame("Button", v[1], TrainingFrame, nil)
+        Register_Spell_Button:SetSize(137, 13)
+        Register_Spell_Button:SetPoint(v[2], v[3], v[4])
+        Register_Spell_Button:SetEnabledMouse(true)
+        Register_Spell_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        Register_Spell_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+        
+        local Register_Spell_Text = Register_Spell_Button:CreateFontString(v[1])
+        Register_Spell_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+        Register_Spell_Text:SetSize(137, 5)
+        Register_Spell_Text:SetPoint("CENTER", 0, 0)
+        Register_Spell_Text:SetText(v[5])
+    end]]
 	
     local TestSpellButton = AIO:CreateFrame("Button", "TestSpellButton", TrainingFrame, nil)
     TestSpellButton:SetSize(137, 13)
@@ -202,12 +200,19 @@ function SidePanel(event, player)
 	
     local FrameUI = AIO:CreateMsg()
     FrameUI:Append(Frame)
-    Frame:Send(player)
-    Frame:Clear()
-	player:SendBroadcastMessage("[DEBUG]: SideBar activated.")
+
+    player:SendBroadcastMessage("[DEBUG]: SideBar activated.")
 	
     local TrainingFrameUI = AIO:CreateMsg()
     TrainingFrameUI:Append(TrainingFrame)
+
+
+function SidePanel(event, player)
+    -- Send Frame
+    Frame:Send(player)
+    Frame:Clear()
+
+    -- Send Frame Children
     TrainingFrame:Send(player)
     TrainingFrame:Clear()
 end
