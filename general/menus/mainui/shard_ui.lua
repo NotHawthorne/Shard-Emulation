@@ -109,7 +109,7 @@ function SidePanel(event, player)
     TrainingFrame_TitleText:SetFont("Fonts\\FRIZQT__.TTF", 13)
     TrainingFrame_TitleText:SetSize(190, 5)
     TrainingFrame_TitleText:SetPoint("CENTER", 0, 0)
-    TrainingFrame_TitleText:SetText("Training")
+    TrainingFrame_TitleText:SetText("|cffFFC125Training|r")
 
 	local TrainingFrame_CategoryPanel = AIO:CreateFrame("Frame", "TrainingFrame_CategoryPanel", TrainingFrame, nil)
     TrainingFrame_CategoryPanel:SetSize(150, 250)
@@ -164,6 +164,41 @@ function SidePanel(event, player)
         tileSize = 16,
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
+	
+
+	--[[local spell_list={
+    --{"number of button", SetPoint, XOffset, YOffset, text}
+	{"1", "CENTER", 0, 92.5, "Holy Bonds"},
+	{"2", "CENTER", 0, 72.5, "Smite"}
+	};
+	
+	for k, v in pairs(spell_list) do
+		local Register_Spell_Button = AIO:CreateFrame("Button", v[1], TrainingFrame, nil)
+		Register_Spell_Button:SetSize(137, 13)
+		Register_Spell_Button:SetPoint(v[2], v[3], v[4])
+		Register_Spell_Button:SetEnabledMouse(true)
+		Register_Spell_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+		Register_Spell_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+		
+		local Register_Spell_Text = Register_Spell_Button:CreateFontString(v[1])
+		Register_Spell_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+		Register_Spell_Text:SetSize(137, 5)
+		Register_Spell_Text:SetPoint("CENTER", 0, 0)
+		Register_Spell_Text:SetText(v[5])
+	end]]
+	
+    local TestSpellButton = AIO:CreateFrame("Button", "TestSpellButton", TrainingFrame, nil)
+    TestSpellButton:SetSize(137, 13)
+    TestSpellButton:SetPoint("CENTER", 0, 92.5)
+    TestSpellButton:SetEnabledMouse(true)
+    TestSpellButton:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+    TestSpellButton:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+	
+    local TestSpellText = TestSpellButton:CreateFontString("TestSpellText")
+    TestSpellText:SetFont("Fonts\\FRIZQT__.TTF", 11)
+    TestSpellText:SetSize(137, 5)
+    TestSpellText:SetPoint("CENTER", 0, 0)
+    TestSpellText:SetText("Holy Bonds")
 	
     local FrameUI = AIO:CreateMsg()
     FrameUI:Append(Frame)
