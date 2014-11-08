@@ -58,12 +58,10 @@ function SA.RenderMainMenu(player)
 		};
 
         local YOffset = 320
-        local Frame = CreateFrame(SA.Prefix.."MainFrame")
+        local Frame = AIO:CreateFrame("StatFrame", "Stat Frame", nil, "UIPanelDialogTemplate")
        
-        Frame:SetText("Stat Allocation")
-        Frame:SetCantMove(false)
-        Frame:SetHeight(190)
-        Frame:SetWidth(220)
+        Frame:SetMoveable(true)
+        Frame:SetSize(220, 190)
 
         -- [[ RENDER TEXT BOXES ]]
         for k, v in pairs(SA.TextBoxes) do
