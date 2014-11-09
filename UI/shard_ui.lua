@@ -41,8 +41,8 @@ require("AIO")
     StatFrame:SetPoint("CENTER")
     StatFrame:SetClampedToScreen(true)
     StatFrame:SetBackdrop({
-        bgFile = "Interface/AchievementFrame/UI-Achievement-Parchment-Horizontal",
-        edgeFile = "Interface/DialogFrame/UI-DialogBox-Gold-Border",
+        bgFile = "Interface/FrameGeneral/UI-Background-Rock",		--Doesnt exist in mpqs by default. Custom patch.
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
         edgeSize = 20,
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
@@ -87,21 +87,41 @@ require("AIO")
     StatAllocationButton:SetScript("OnLeave", AIO:ToFunction(StatAllocationButton_Tooltip_OnLeave))
 
 
-    local TestButton2 = AIO:CreateFrame("Button", "TestButton2", Frame)
-    TestButton2:SetSize(32, 32)
-    TestButton2:SetPoint("CENTER", 0, -1)
-    TestButton2:SetEnabledMouse(true)
-    TestButton2:SetNormalTexture("Interface/ICONS/Spell_Arcane_Rune")
-    TestButton2:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
-    TestButton2:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+    local InvocationButton = AIO:CreateFrame("Button", "InvocationButton", Frame)
+    InvocationButton:SetSize(32, 32)
+    InvocationButton:SetPoint("CENTER", 0, -1)
+    InvocationButton:SetEnabledMouse(true)
+    InvocationButton:SetNormalTexture("Interface/ICONS/Spell_Arcane_Rune")
+    InvocationButton:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
+    InvocationButton:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+	local InvocationButton_Tooltip_OnEnter = [[
+        GameTooltip:SetOwner(select(1, ...), "ANCHOR_RIGHT")
+        GameTooltip:SetText("|cffFFFFFFInvocation|r\n'Soon'\n      -Blizzard Entertainment")
+        GameTooltip:Show()
+    ]]
+    InvocationButton:SetScript("OnEnter", AIO:ToFunction(InvocationButton_Tooltip_OnEnter))
+    local InvocationButton_Tooltip_OnLeave = [[
+        GameTooltip:Hide()
+    ]]
+    InvocationButton:SetScript("OnLeave", AIO:ToFunction(InvocationButton_Tooltip_OnLeave))
 
-    local TestButton3 = AIO:CreateFrame("Button", "TestButton3", Frame)
-    TestButton3:SetSize(32, 32)
-    TestButton3:SetPoint("CENTER", 0, -35)
-    TestButton3:SetEnabledMouse(true)
-    TestButton3:SetNormalTexture("Interface/ICONS/Achievement_Dungeon_Outland_Dungeon_Hero")
-    TestButton3:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
-    TestButton3:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+    local PvPButton = AIO:CreateFrame("Button", "PvPButton", Frame)
+    PvPButton:SetSize(32, 32)
+    PvPButton:SetPoint("CENTER", 0, -35)
+    PvPButton:SetEnabledMouse(true)
+    PvPButton:SetNormalTexture("Interface/ICONS/Achievement_Dungeon_Outland_Dungeon_Hero")
+    PvPButton:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
+    PvPButton:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+	local PvPButton_Tooltip_OnEnter = [[
+        GameTooltip:SetOwner(select(1, ...), "ANCHOR_RIGHT")
+        GameTooltip:SetText("|cffFFFFFFPvP Statistics|r\n'Soon'\n      -Blizzard Entertainment")
+        GameTooltip:Show()
+    ]]
+    PvPButton:SetScript("OnEnter", AIO:ToFunction(PvPButton_Tooltip_OnEnter))
+    local PvPButton_Tooltip_OnLeave = [[
+        GameTooltip:Hide()
+    ]]
+    PvPButton:SetScript("OnLeave", AIO:ToFunction(PvPButton_Tooltip_OnLeave))
 
     local TestButton4 = AIO:CreateFrame("Button", "TestButton4", Frame)
     TestButton4:SetSize(32, 32)
@@ -199,6 +219,11 @@ require("AIO")
 			bgFile = "Interface/ICONS/Spell_Nature_Slow.png"
 		})
 		HolyBonds_Icon:Hide()
+		HolyBonds_Desc = HolyBonds_Icon:CreateFontString("HolyBonds_Desc")
+		HolyBonds_Desc:SetFont("Fonts\\FRIZQT__.TTF", 11)
+		HolyBonds_Desc:SetSize(150, 150)
+		HolyBonds_Desc:SetPoint("LEFT", -119, -50)
+		HolyBonds_Desc:SetText("|cffFFC125You shackle your target, rendering them unable to act until damaged. Lasts longer and cools down faster based on rank.|r")
 	
 	--[[DEFINE SPELL SELECTION BUTTONS]]--
 		--Holy Bonds
@@ -210,12 +235,14 @@ require("AIO")
         HolyBonds_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
 		HolyBonds_Button:SetScript("OnMouseUp", AIO:ToFunction([[
 		HolyBonds_Icon:Show()
+		HolyBonds_Desc:Show()
 		]]))
         local HolyBonds_Text = HolyBonds_Button:CreateFontString("HolyBonds_Text")
         HolyBonds_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
         HolyBonds_Text:SetSize(137, 5)
         HolyBonds_Text:SetPoint("CENTER", 0, 0)
         HolyBonds_Text:SetText("Holy Bonds")
+		HolyBonds_Desc:Hide()
 		HolyBonds_Text:Hide()
 		HolyBonds_Button:Hide()
 				
@@ -288,6 +315,24 @@ require("AIO")
     StatFrame_CloseButton:SetPoint("TOPRIGHT", -5, -5)
     StatFrame_CloseButton:SetEnabledMouse(true)
     StatFrame_CloseButton:SetSize(27, 27)
+	
+    local StatFrame_TitleBar = AIO:CreateFrame("Frame", "StatFrame_TitleBar", StatFrame, nil)
+    StatFrame_TitleBar:SetSize(135, 25)
+    StatFrame_TitleBar:SetBackdrop({
+        bgFile = "Interface/CHARACTERFRAME/UI-Party-Background",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+        tile = true,
+        edgeSize = 16,
+        tileSize = 16,
+        insets = { left = 5, right = 5, top = 5, bottom = 5 }
+    })
+	StatFrame_TitleBar:SetPoint("TOP", 0, 9)
+	
+    local StatFrame_TitleText = StatFrame_TitleBar:CreateFontString("StatFrame_TitleText")
+    StatFrame_TitleText:SetFont("Fonts\\FRIZQT__.TTF", 13)
+    StatFrame_TitleText:SetSize(190, 5)
+    StatFrame_TitleText:SetPoint("CENTER", 0, 0)
+    StatFrame_TitleText:SetText("|cffFFC125Stat Allocation|r")
 
     local FrameUI = AIO:CreateMsg()
     FrameUI:Append(Frame)
