@@ -30,6 +30,8 @@ msg:AddBlock(Name, ...) -- FuncName, arguments
 msg:Send(...) -- Receiver players, will not be used for client->server messages
 msg:Append(MSG) -- Appends another message to the message
 msg:Clear() -- Deletes the message from the message
+msg:ToString() -- Returns the message (always msg var or "")
+msg:HasMsg() -- returns true or false depending on msg being string or not
 You can code handlers to the receiver end and trigger them with AddBlock
 Example of handler on receiver side:
 function BlockHandle.Print(value)
@@ -112,18 +114,28 @@ AIO =
     Objects = {},
     -- Stores long messages for players
     LongMessages = {},
-    -- Counter for nameless objects (used for naming)
+    -- Counter for nameless objects (used for naming serverside)
     NamelessCount = 0,
+    -- Server side var of messages (string) to send on initing player UI
+    INIT_MSG = nil,
+    -- Server side table of functions to call before initing player UI
+    PRE_INIT_FUNCS = {},
+    -- Server side table of functions to call after initing player UI
+    POST_INIT_FUNCS = {},
+    -- Client side flag for noting if the client has been inited or not
+    -- Server side flag for noting when server load operations have been done and they should no longer be done
+    INITED = false,
 }
 
-AIO.SERVER = GetLuaEngine ~= nil
-AIO.Version = 0.1
+AIO.SERVER = type(GetLuaEngine) == "function"
+AIO.Version = 0.41
 -- Used for client-server messaging
 AIO.Prefix  = "AIO"
 -- ID characters for client-server messaging
 AIO.Ignore          = 'a'
 AIO.ShortMsg        = 'b'
 AIO.LongMsg         = 'c'
+AIO.LongMsgStart    = 'p'
 AIO.LongMsgEnd      = 'd'
 AIO.StartBlock      = 'e'
 AIO.StartData       = 'f'
@@ -137,26 +149,38 @@ AIO.String          = 'm'
 AIO.Number          = 'n'
 AIO.Global          = 'o'
 AIO.Identifier      = '&'
-AIO.Prefix = AIO.Prefix:sub(1, 16) -- shorten prefix to max allowed
-AIO.MsgLen = 255 -1 -AIO.Prefix:len() -AIO.ShortMsg:len() -- remove \t, prefix
-AIO.LongMsgLen = 255 -1 -AIO.Prefix:len() -AIO.LongMsg:len() -AIO.LongMsgEnd:len() -- remove \t, prefix, long tag, long end tag
+AIO.Prefix = AIO.Prefix:sub(1, 16) -- shorten prefix to max allowed if needed
+AIO.ServerPrefix = ("S"..AIO.Prefix):sub(1, 16)
+AIO.ClientPrefix = ("C"..AIO.Prefix):sub(1, 16)
+AIO.MsgLen = 255 -1 -math.max(AIO.ServerPrefix:len(), AIO.ClientPrefix:len()) -AIO.ShortMsg:len() -- remove \t, prefix, msg type indentifier
+AIO.LongMsgLen = 255 -1 -math.max(AIO.ServerPrefix:len(), AIO.ClientPrefix:len()) -AIO.LongMsg:len() -- remove \t, prefix, msg type indentifier
+
+-- premature optimization ftw
+local type = type
+local assert = assert
+local tostring = tostring
+local tonumber = tonumber
+local pairs = pairs
+local ipairs = ipairs
+local _G = _G
+local AIO = AIO
 
 -- Some lua compatibility
-AIO.loadstring = loadstring or load
-AIO.unpack = table.unpack or unpack
-AIO.maxn = table.maxn or function(t) local n for k, _ in pairs(t) do n = k end return n end
+AIO.loadstring = loadstring or load -- loadstring name varies with lua 5.1 and 5.2
+AIO.unpack = table.unpack or unpack -- unpack place varies with lua 5.1 and 5.2
+AIO.maxn = table.maxn or function(t) local n = 0 for k, _ in pairs(t) do if(type(k) == "number" and k > n) then n = k end end return n end -- table.maxn was removed in lua 5.2
 
 -- Merges t2 to t1 (tables)
 function AIO:TableMerge(t1, t2)
     for k,v in pairs(t2) do
-    	if (type(v) == "table") then
+        if (type(v) == "table") then
             if(type(t1[k]) ~= "table") then
                 t1[k] = {}
             end
             AIO:TableMerge(t1[k], t2[k])
         else
             t1[k] = v
-    	end
+        end
     end
     return t1
 end
@@ -292,7 +316,7 @@ end
 function AIO:ToNumber(val)
     val = tonumber(val)
     assert(val)
-    return AIO.Identifier..AIO.Number..val
+    return AIO.Identifier..AIO.Number..AIO:ToByte(tostring(val))
 end
 -- Converts boolean to parameter
 function AIO:ToBoolean(bool)
@@ -357,7 +381,7 @@ function AIO:ToRealVal(val)
         if (val:find(AIO.String) == 1) then
             return AIO:FromByte(val:sub(2))
         elseif (val:find(AIO.Number) == 1) then
-            return tonumber(val:sub(2))
+            return tonumber(AIO:FromByte(val:sub(2)))
         elseif (val:find(AIO.Function) == 1) then
             if(AIO.SERVER) then
                 return nil -- ignore on server side, unsafe
@@ -449,6 +473,14 @@ function AIO.CreateMsg()
         self.MSG = nil
     end
     
+    function msg:ToString()
+        return self.MSG or ""
+    end
+    
+    function msg:HasMsg()
+        return type(self.MSG) == "string"
+    end
+    
     return msg
 end
 
@@ -457,11 +489,11 @@ function AIO:SendAddonMessage(msg, player)
     if(AIO.SERVER) then
         -- server -> client
         if(player) then
-            player:SendAddonMessage(AIO.Prefix, msg, 7, player)
+            player:SendAddonMessage(AIO.ServerPrefix, msg, 7, player)
         end
     else
         -- client -> server
-        SendAddonMessage(AIO.Prefix, msg, "WHISPER", UnitName("player"))
+        SendAddonMessage(AIO.ClientPrefix, msg, "WHISPER", UnitName("player"))
     end
 end
 
@@ -486,13 +518,18 @@ function AIO:Send(msg, player, ...)
     
     -- split message to 255 character packets if needed (send long message)
     if (msg:len() <= AIO.MsgLen) then
+        -- Send short <= 255 long msg
         AIO:SendAddonMessage(AIO.ShortMsg..msg, player)
     else
-        while msg:len() > AIO.MsgLen do
-            AIO:SendAddonMessage(AIO.LongMsg..string.sub(msg, 1, AIO.MsgLen), player)
-            msg = string.sub(msg, AIO.MsgLen+1)
+        msg = AIO.LongMsgStart..msg -- Add start tag
+        
+        -- Calculate amount of messages to send -1 since one message is the end message
+        -- The msg length already contains the start tag, we add length of end tag
+        local msgs = math.ceil((msg:len()+AIO.LongMsgEnd:len()) / AIO.LongMsgLen)-1
+        for i = 1, msgs do
+            AIO:SendAddonMessage(AIO.LongMsg..string.sub(msg, ((i-1)*AIO.LongMsgLen)+1, (i*AIO.LongMsgLen)), player)
         end
-        AIO:SendAddonMessage(AIO.LongMsg..AIO.LongMsgEnd..msg, player)
+        AIO:SendAddonMessage(AIO.LongMsg..AIO.LongMsgEnd..string.sub(msg, ((msgs)*AIO.LongMsgLen)+1, ((msgs+1)*AIO.LongMsgLen)), player)
     end
 end
 
@@ -500,30 +537,38 @@ end
 -- Messages can be 255 characters long, so big messages will be split
 function AIO:HandleIncomingMsg(msg, player)
     -- Received a long message part (msg split into 255 character parts)
-	if (msg:find(AIO.LongMsg)) == 1 then
+    if (msg:find(AIO.LongMsg)) == 1 then
         local guid = AIO.SERVER and player:GetGUIDLow() or 1
-		if (msg:find(AIO.LongMsgEnd)) == 2 then
-			if (not AIO.LongMessages[guid]) then
-                -- Dont error when client sends bad data
+        if (msg:find(AIO.LongMsgStart)) == 2 then
+            -- The first message of a long message received. Erase any previous message (reload can mess etc)
+            AIO.LongMessages[guid] = msg:sub(3)
+        elseif (msg:find(AIO.LongMsgEnd)) == 2 then
+            -- The last message of a long message received.
+            if (not AIO.LongMessages[guid]) then
+                -- Dont error when client sends bad data (end without start)
                 if (AIO.SERVER) then
                     AIO.LongMessages[guid] = nil
                     return
                 else
+                    AIO.LongMessages[guid] = nil
                     error("Received long message end tag even if there has been no long message")
+                    return
                 end
             end
-			AIO:ParseBlocks(AIO.LongMessages[guid]..msg:sub(3), player)
-			AIO.LongMessages[guid] = nil
-		else
-			if (not AIO.LongMessages[guid]) then
-                AIO.LongMessages[guid] = ""
+            AIO:ParseBlocks(AIO.LongMessages[guid]..msg:sub(3), player)
+            AIO.LongMessages[guid] = nil
+        else
+            -- A part of a long message received.
+            -- Ignore if a msg not even started
+            if (not AIO.LongMessages[guid]) then
+                return
             end
-			AIO.LongMessages[guid] = AIO.LongMessages[guid]..msg:sub(2)
-		end
+            AIO.LongMessages[guid] = AIO.LongMessages[guid]..msg:sub(2)
+        end
     elseif (msg:find(AIO.ShortMsg) == 1) then
-        -- Received <= 255 char msg, direct parse
+        -- Received <= 255 char msg, direct parse, take out the msg tag first
         AIO:ParseBlocks(msg:sub(2), player)
-	end
+    end
 end
 
 -- Extracts blocks from msg to a table that has block data in a table
@@ -532,13 +577,14 @@ function AIO:ParseBlocks(msg, player)
     local _, ignoreEnd, ignoreFrame = msg:find("^"..AIO.Ignore.."([^"..AIO.StartBlock..AIO.StartData.."]+)")
     if(ignoreEnd) then
         local ignore = AIO:ToRealVal(ignoreFrame)
-        if(type(ignore) == "function" and ignore(player, msg) or ignore) then
+        if((type(ignore) == "function" and ignore(player, msg)) or ignore) then
             return
         end
         msg = msg:sub(ignoreEnd+1)
     end
     for block in msg:gmatch(AIO.StartBlock.."([^"..AIO.StartBlock.."]+)") do
         local t = {}
+        -- table.insert is not used here since it ignores nil values
         local i = 1
         for data in block:gmatch(AIO.StartData.."([^"..AIO.StartData..AIO.StartBlock.."]+)") do
             t[i] = AIO:ToRealVal(data)
@@ -556,33 +602,62 @@ end
 if(AIO.SERVER) then
     -- If serverscript
     local function ONADDONMSG(event, sender, Type, prefix, msg, target)
-        if(prefix == AIO.Prefix and tostring(sender) == tostring(target)) then
+        if(prefix == AIO.ClientPrefix and tostring(sender) == tostring(target)) then
             AIO:HandleIncomingMsg(msg, sender)
         end
     end
     
-    local function ONLOGIN(event, player)
-        local msg = AIO:CreateMsg() -- Create new message
-        msg:AddBlock("Version", AIO.Version)
-        msg:Send(player)
+    local function LOGOUT(event, player)
+        -- Remove messages saved for player when he disconnects
+        AIO.LongMessages[player:GetGUIDLow()] = nil
     end
 
     RegisterServerEvent(30, ONADDONMSG)
-    RegisterPlayerEvent(3, ONLOGIN)
+    RegisterPlayerEvent(4, LOGOUT)
 else
     -- If addonscript
+    
+    -- message to request initialization of UI
+    local initmsg = AIO:CreateMsg()
+    initmsg:AddBlock("Init")
+    
     local function ONADDONMSG(self, event, prefix, msg, Type, sender)
-        if (prefix == AIO.Prefix) then
+        if (prefix == AIO.ServerPrefix) then
             if(event == "CHAT_MSG_ADDON" and sender == UnitName("player")) then
+                -- Normal AIO message handling from addon messages
                 AIO:HandleIncomingMsg(msg, sender)
             end
+        elseif(event == "PLAYER_LOGIN") then
+            -- Request initialization of UI on player login if not done yet
+            if(AIO.INITED) then
+                return
+            end
+            initmsg:Send()
+        end
+    end
+    
+    -- Request initialization of UI if not done yet
+    -- works by timer for every second. Timer shut down after inited.
+    local reset = 1
+    local timer = reset
+    local function ONUPDATE(self, diff)
+        if(AIO.INITED) then
+            self:SetScript("OnUpdate", nil)
+            return
+        end
+        if (timer < diff) then
+            initmsg:Send()
+            timer = reset
+        else
+            timer = timer - diff
         end
     end
     
     local MsgReceiver = CreateFrame("Frame")
-    MsgReceiver:RegisterEvent("ADDON_LOADED")
+    MsgReceiver:RegisterEvent("PLAYER_LOGIN")
     MsgReceiver:RegisterEvent("CHAT_MSG_ADDON")
     MsgReceiver:SetScript("OnEvent", ONADDONMSG)
+    MsgReceiver:SetScript("OnUpdate", ONUPDATE)
 end
 
 if (AIO.SERVER) then

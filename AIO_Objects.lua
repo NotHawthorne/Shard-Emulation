@@ -19,7 +19,11 @@
 -- http://www.wowwiki.com/Widget_handlers
 -- http://www.wowwiki.com/Widget_API
 
-require("AIO")
+local AIO = require("AIO")
+
+local assert = assert
+local ipairs = ipairs
+local type = type
 
 -- Check if loaded
 -- Try to avoid multiple loads with require etc
@@ -850,18 +854,42 @@ do
         Methods = {
         },
     }
-    for k,v in ipairs(Inherits) do
+    for k,v in pairs(Inherits) do
         table.insert(Dummy.Inherits, k)
     end
-    for k,v in ipairs(GetSet_Methods) do
-        table.insert(Dummy.GetSet_Methods, k)
-    end
-    for k,v in ipairs(Methods) do
-        table.insert(Dummy.Methods, k)
-    end
+    -- for k,v in pairs(GetSet_Methods) do
+    --     table.insert(Dummy.GetSet_Methods, k)
+    -- end
+    -- for k,v in pairs(Methods) do
+    --     table.insert(Dummy.Methods, k)
+    -- end
     ObjectTypes["Dummy"] = Dummy
 end
 
+-- Adds a new msg or frame to an initialization message that is sent to the player when he logs in or when he reloads UI (UI init)
+function AIO:AddInitMsg(msgorframe)
+    assert(not AIO.INITED, "You can only use this function on startup")
+    AIO.INIT_MSG = AIO.INIT_MSG or AIO:CreateMsg()
+    AIO.INIT_MSG:Append(msgorframe)
+end
+
+-- Adds a new function to be called when the player logs in or when he reloads UI (on UI init)
+-- Argumets passed: func(player)
+-- Called just before sending UI
+function AIO:AddPreInitFunc(func)
+    assert(type(func) == "function")
+    assert(not AIO.INITED, "You can only use this function on startup")
+    table.insert(AIO.PRE_INIT_FUNCS, func)
+end
+
+-- Adds a new function to be called when the player logs in or when he reloads UI (on UI init)
+-- Argumets passed: func(player)
+-- Called just after sending UI
+function AIO:AddPostInitFunc(func)
+    assert(type(func) == "function")
+    assert(not AIO.INITED, "You can only use this function on startup")
+    table.insert(AIO.POST_INIT_FUNCS, func)
+end
 
 -- Creates a new object of given type
 -- Used by CreateFrame etc functions to create the base object with needed methods
@@ -870,7 +898,7 @@ function AIO:CreateObject(Type, Name, Parent)
     if(not Name) then
         -- Nameless, create a name from prefix_NamelessTypeCount
         AIO.NamelessCount = AIO.NamelessCount + 1
-        Name = AIO.Prefix.."_".."Nameless"..Type..AIO.NamelessCount
+        Name = AIO.Prefix.."_"..Type.."_"..AIO.NamelessCount
     end
     if(AIO.Objects[Name]) then
         error("Warning, overwrote object "..Type.." "..Name..", should probably NOT use same name objects!")
@@ -1011,7 +1039,7 @@ end
 
 -- Creates a new Frame object and sets all methods and variables for it
 function AIO:CreateFrame(Type, Name, Parent, Template)
-    assert(Type and Name)
+    assert(Type)
     assert(ObjectTypes[Type], "Invalid frame type"..Type)
     
     -- Frame can probably only have a frame parent
@@ -1172,29 +1200,45 @@ end
 -- The return value(s) of the ClientFunc is added to ClientFuncRet table parameter for the Func executed server side
 -- Func arguments will then be (Player, Event, EventParamsTable, ClientFuncRet)
 function MethodHandle.SetScript(self, Event, Func, ClientFunc, ...)
-    self.Scripts[Event] = {Func, ClientFunc, ...}
-    if(type(Func) == "function") then
+    assert(AIO:IsFrame(self), "self not frame")
+    assert(type(Event) == "string", "Event not string")
+    local ftype = type(Func)
+    if(ftype == "function") then
         -- Was server side executable function
-        local callback = AIO:ToFunction("local function CliFunc(...) "..ClientFunc.." end local MSG = AIO:CreateMsg() MSG:AddBlock('ServerEvent', '"..Event.."', {...}, {CliFunc(...)}) MSG:Send()")
+        local callback = AIO:ToFunction("local function CliFunc(...) "..(ClientFunc or "").." end local MSG = AIO:CreateMsg() MSG:AddBlock('ServerEvent', '"..Event.."', {...}, {CliFunc(...)}) MSG:Send()")
         self:AddBlock("Method", self:GetName(), "SetScript", Event, callback)
-    else
+    elseif(ftype == "string") then
         -- Was client side executable function ( func as string with AIO:ToFunction(funcstr) )
         -- Imitate using a method
         self:AddBlock("Method", self:GetName(), "SetScript", Event, Func)
+    elseif(ftype == "nil") then
+        -- Was nil, erase executed function
+        self:AddBlock("Method", self:GetName(), "SetScript", Event, nil)
+    else
+        error("Func was not a string nor a function")
     end
+    self.Scripts[Event] = {Func, ClientFunc, ...}
 end
 -- Same as SetScrpt
 function MethodHandle.HookScript(self, Event, Func, ClientFunc, ...)
-    self.Scripts[Event] = {Func, ClientFunc, ...}
-    if(type(Func) == "function") then
+    assert(AIO:IsFrame(self), "self not frame")
+    assert(type(Event) == "string", "Event not string")
+    local ftype = type(Func)
+    if(ftype == "function") then
         -- Was server side executable function
-        local callback = AIO:ToFunction("local function CliFunc(...) "..ClientFunc.." end local MSG = AIO:CreateMsg() MSG:AddBlock('ServerEvent', '"..Event.."', {...}, {CliFunc(...)}) MSG:Send()")
+        local callback = AIO:ToFunction("local function CliFunc(...) "..(ClientFunc or "").." end local MSG = AIO:CreateMsg() MSG:AddBlock('ServerEvent', '"..Event.."', {...}, {CliFunc(...)}) MSG:Send()")
         self:AddBlock("Method", self:GetName(), "HookScript", Event, callback)
-    else
+    elseif(ftype == "string") then
         -- Was client side executable function ( func as string with AIO:ToFunction(funcstr) )
         -- Imitate using a method
         self:AddBlock("Method", self:GetName(), "HookScript", Event, Func)
+    elseif(ftype == "nil") then
+        -- Was nil, erase executed function
+        self:AddBlock("Method", self:GetName(), "HookScript", Event, nil)
+    else
+        error("Func was not a string nor a function")
     end
+    self.Scripts[Event] = {Func, ClientFunc, ...}
 end
 function MethodHandle.GetScript(self, Event, ...)
     return AIO.unpack(self.Scripts[Event], 1, AIO.maxn(self.Scripts[Event]))
@@ -1202,7 +1246,6 @@ end
 function MethodHandle.HasScript(self, Event, ...)
     return AIO.unpack(self.Scripts[Event], 1, AIO.maxn(self.Scripts[Event])) ~= nil
 end
-
 
 -- Creates function content as string that returns values IN ORDER from given function executed on objects or object names passed
 -- ObjDo accepts an object (or name) and a string. Every other passed argument is an object and every other is a string.

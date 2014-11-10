@@ -19,4 +19,9 @@ local function bonusxp (event, killer, killed)
 		end
 	end
 end
-RegisterPlayerEvent(7, bonusxp)
+--RegisterPlayerEvent(7, bonusxp)
+
+--[[
+Needs to be reworked so that
+everyone in the group recieves
+bonus exp.    -NotHawthorne  ]]
