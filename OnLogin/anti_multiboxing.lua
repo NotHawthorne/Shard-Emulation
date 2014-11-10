@@ -17,4 +17,6 @@ local function multiboxing (event, player)
 	end
 end
 
-RegisterPlayerEvent(3, multiboxing)
+--RegisterPlayerEvent(3, multiboxing)
+
+--Disabled for testing. -NotHawthorne

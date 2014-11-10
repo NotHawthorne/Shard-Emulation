@@ -1,5 +1,7 @@
---Full Loot On Death Script by NotHawthorne of ModCraft--
+--Full Loot On Death Script by NotHawthorne of ModCraft/EmuDevs--
 local function FFAPvP(event, pKiller, pKilled)
+		--Fetch PvP Stats
+		killerstats = CharDBQuery("SELECT honorable_kills,dishonorable_kills FROM shard_pvp_stats WHERE playerguid="..pKiller:GetGUIDLow().."")
 		--Fetch Guild Names
 		if (pKiller:GetGuildName()~=nil) then
 			killerguild_name = " of "..pKiller:GetGuildName()..""
@@ -78,7 +80,9 @@ local function FFAPvP(event, pKiller, pKilled)
 		elseif (kill_message==6) then
 			SendWorldMessage("[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", wanted a piece of |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name..", but bit off a little more than they could chew!")
 		end
+		CharDBExecute("UPDATE shard_pvp_stats SET honorable_kills="..(killerstats:GetUInt32(0)+1).." WHERE playerguid = "..pKiller:GetGUIDLow().."")
 	else
+		CharDBExecute("UPDATE shard_pvp_stats SET dishonorable_kills="..(killerstats:GetUInt32(1)+1).." WHERE playerguid = "..pKiller:GetGUIDLow().."")
 		SendWorldMessage("[PvP]: |cffff0000Everyone give a big round of applause to|r |CFF"..killer_color..""..pKiller:GetName().."|r |cffff0000"..killerguild_name..", whom is level "..pKiller:GetLevel()..", killed|r |CFF"..killed_color..""..pKilled:GetName().."|r|cffff0000, a level "..pKilled:GetLevel()..".|r")
 	end
 end
