@@ -1,6 +1,9 @@
 --Sidebar
 require("AIO")
 
+--Global vars
+pointgain = 6    --Stat points gained per level
+
 --[[STATIC SIDEBAR]]--
     local Frame = AIO:CreateFrame("Frame", "FrameTest", "UIParent", nil)
     Frame:SetSize(42, 179)
@@ -172,7 +175,7 @@ require("AIO")
     TrainingFrame_CategoryText:SetFont("Fonts\\FRIZQT__.TTF", 11)
     TrainingFrame_CategoryText:SetSize(190, 5)
     TrainingFrame_CategoryText:SetPoint("TOP", 0, 13)
-    TrainingFrame_CategoryText:SetText("Category")
+    TrainingFrame_CategoryText:SetText("Focus")
 
     local TrainingFrame_SpellPanel = AIO:CreateFrame("Frame", "TrainingFrame_SpellPanel", TrainingFrame, nil)
     TrainingFrame_SpellPanel:SetSize(150, 250)
@@ -185,18 +188,30 @@ require("AIO")
         tileSize = 16,
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
+	
+    local TrainingFrame_SpellNamePanel = AIO:CreateFrame("Frame", "TrainingFrame_SpellNamePanel", TrainingFrame, nil)
+    TrainingFrame_SpellNamePanel:SetSize(120, 36)
+    TrainingFrame_SpellNamePanel:SetPoint("RIGHT", -50, 90)
+    TrainingFrame_SpellNamePanel:SetBackdrop({
+        bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+        tile = true,
+        edgeSize = 16,
+        tileSize = 16,
+        insets = { left = 5, right = 5, top = 5, bottom = 5 }
+    })
 
     local TrainingFrame_SpellText = TrainingFrame_SpellPanel:CreateFontString("TrainingFrame_SpellText")
     TrainingFrame_SpellText:SetFont("Fonts\\FRIZQT__.TTF", 11)
     TrainingFrame_SpellText:SetSize(190, 5)
     TrainingFrame_SpellText:SetPoint("TOP", 0, 13)
-    TrainingFrame_SpellText:SetText("Ability")
+    TrainingFrame_SpellText:SetText("Focus Abilities")
 
     local TrainingFrame_DescriptionText = TrainingFrame_SpellPanel:CreateFontString("TrainingFrame_DescriptionText")
     TrainingFrame_DescriptionText:SetFont("Fonts\\FRIZQT__.TTF", 11)
     TrainingFrame_DescriptionText:SetSize(190, 5)
     TrainingFrame_DescriptionText:SetPoint("TOP", 160, 13)
-    TrainingFrame_DescriptionText:SetText("Ability Description")
+    TrainingFrame_DescriptionText:SetText("Description")
 
     local TrainingFrame_IconPanel = AIO:CreateFrame("Frame", "TrainingFrame_IconPanel", TrainingFrame, nil)
     TrainingFrame_IconPanel:SetSize(40, 40)
@@ -218,12 +233,23 @@ require("AIO")
 		HolyBonds_Icon:SetBackdrop({
 			bgFile = "Interface/ICONS/Spell_Nature_Slow.png"
 		})
-		HolyBonds_Icon:Hide()
 		HolyBonds_Desc = HolyBonds_Icon:CreateFontString("HolyBonds_Desc")
 		HolyBonds_Desc:SetFont("Fonts\\FRIZQT__.TTF", 11)
 		HolyBonds_Desc:SetSize(150, 150)
 		HolyBonds_Desc:SetPoint("LEFT", -119, -50)
 		HolyBonds_Desc:SetText("|cffFFC125You shackle your target, rendering them unable to act until damaged. Lasts longer and cools down faster based on rank.|r")
+		
+		HolyBonds_Info = HolyBonds_Icon:CreateFontString("HolyBonds_Info")
+		HolyBonds_Info:SetFont("Fonts\\FRIZQT__.TTF", 9)
+		HolyBonds_Info:SetSize(150, 150)
+		HolyBonds_Info:SetPoint("CENTER", -80, 6)
+		HolyBonds_Info:SetText("Requires Liturgy: 25")
+		
+		HolyBonds_Info2 = HolyBonds_Icon:CreateFontString("HolyBonds_Info2")
+		HolyBonds_Info2:SetFont("Fonts\\FRIZQT__.TTF", 9)
+		HolyBonds_Info2:SetSize(150, 150)
+		HolyBonds_Info2:SetPoint("CENTER", -80, -6)
+		HolyBonds_Info2:SetText("Requires Level: 5")
 	
 	--[[DEFINE SPELL SELECTION BUTTONS]]--
 		--Holy Bonds
@@ -236,12 +262,16 @@ require("AIO")
 		HolyBonds_Button:SetScript("OnMouseUp", AIO:ToFunction([[
 		HolyBonds_Icon:Show()
 		HolyBonds_Desc:Show()
+		HolyBonds_Info:Show()
+		HolyBonds_Info2:Show()
 		]]))
         local HolyBonds_Text = HolyBonds_Button:CreateFontString("HolyBonds_Text")
         HolyBonds_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
         HolyBonds_Text:SetSize(137, 5)
         HolyBonds_Text:SetPoint("CENTER", 0, 0)
         HolyBonds_Text:SetText("Holy Bonds")
+		
+		HolyBonds_Icon:Hide()
 		HolyBonds_Desc:Hide()
 		HolyBonds_Text:Hide()
 		HolyBonds_Button:Hide()
@@ -276,7 +306,7 @@ require("AIO")
 		Bloodbolt_Text:Hide()
 		Bloodbolt_Button:Hide()
 		
-	--[[DEFINE CATEGORY SELECTION BUTTONS]]
+	--[[DEFINE CATEGORY SELECTION BUTTONS]]--
 		--Liturgy
         local Liturgy_Button = AIO:CreateFrame("Button", "Liturgy_Button", TrainingFrame, nil)
         Liturgy_Button:SetSize(137, 13)
@@ -284,10 +314,6 @@ require("AIO")
         Liturgy_Button:SetEnabledMouse(true)
         Liturgy_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
         Liturgy_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
-		Liturgy_Button:SetScript("OnMouseUp", AIO:ToFunction([[
-		HolyBonds_Text:Show() HolyBonds_Button:Show()
-		Smite_Text:Show() Smite_Button:Show()
-		]]))
         local Liturgy_Text = Liturgy_Button:CreateFontString("Liturgy_Text")
         Liturgy_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
         Liturgy_Text:SetSize(137, 5)
@@ -301,14 +327,66 @@ require("AIO")
         Bloodcraft_Button:SetEnabledMouse(true)
         Bloodcraft_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
         Bloodcraft_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
-		Bloodcraft_Button:SetScript("OnMouseUp", AIO:ToFunction([[
-		Bloodbolt_Button:Show() Bloodbolt_Text:Show()
-		]]))
         local Bloodcraft_Text = Bloodcraft_Button:CreateFontString("Bloodcraft_Text")
         Bloodcraft_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
         Bloodcraft_Text:SetSize(137, 5)
         Bloodcraft_Text:SetPoint("CENTER", 0, 0)
         Bloodcraft_Text:SetText("Bloodcraft")
+		
+		--Beastmastery
+        local Beastmastery_Button = AIO:CreateFrame("Button", "Beastmastery_Button", TrainingFrame, nil)
+        Beastmastery_Button:SetSize(137, 13)
+        Beastmastery_Button:SetPoint("LEFT", 16, 62.5)
+        Beastmastery_Button:SetEnabledMouse(true)
+        Beastmastery_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        Beastmastery_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+        local Beastmastery_Text = Beastmastery_Button:CreateFontString("Beastmastery_Text")
+        Beastmastery_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+        Beastmastery_Text:SetSize(137, 5)
+        Beastmastery_Text:SetPoint("CENTER", 0, 0)
+        Beastmastery_Text:SetText("Beastmastery")
+		
+		--Weapon Mastery
+        local WeaponMastery_Button = AIO:CreateFrame("Button", "WeaponMastery_Button", TrainingFrame, nil)
+        WeaponMastery_Button:SetSize(137, 13)
+        WeaponMastery_Button:SetPoint("LEFT", 16, 47.5)
+        WeaponMastery_Button:SetEnabledMouse(true)
+        WeaponMastery_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        WeaponMastery_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+        local WeaponMastery_Text = WeaponMastery_Button:CreateFontString("WeaponMastery_Text")
+        WeaponMastery_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+        WeaponMastery_Text:SetSize(137, 5)
+        WeaponMastery_Text:SetPoint("CENTER", 0, 0)
+        WeaponMastery_Text:SetText("Weapon Mastery")
+		
+		--Shamanism
+        local Shamanism_Button = AIO:CreateFrame("Button", "Shamanism_Button", TrainingFrame, nil)
+        Shamanism_Button:SetSize(137, 13)
+        Shamanism_Button:SetPoint("LEFT", 16, 32.5)
+        Shamanism_Button:SetEnabledMouse(true)
+        Shamanism_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        Shamanism_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+        local Shamanism_Text = Shamanism_Button:CreateFontString("Shamanism_Text")
+        Shamanism_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+        Shamanism_Text:SetSize(137, 5)
+        Shamanism_Text:SetPoint("CENTER", 0, 0)
+        Shamanism_Text:SetText("Shamanism")
+		
+		local HideAll = [[
+		HolyBonds_Text:Hide() HolyBonds_Button:Hide() HolyBonds_Desc:Hide() HolyBonds_Icon:Hide() HolyBonds_Info:Hide() HolyBonds_Info2:Hide()
+		Smite_Text:Hide() Smite_Button:Hide()
+		Bloodbolt_Text:Hide() Bloodbolt_Button:Hide()
+		]]
+		local ShowLiturgy = [[
+		HolyBonds_Text:Show() HolyBonds_Button:Show()
+		Smite_Text:Show() Smite_Button:Show()
+		]]
+		local ShowBloodcraft = [[
+		Bloodbolt_Text:Show() Bloodbolt_Button:Show()
+		]]
+		
+		Liturgy_Button:SetScript("OnMouseUp", AIO:ToFunction(""..HideAll..""..ShowLiturgy..""))
+		Bloodcraft_Button:SetScript("OnMouseUp", AIO:ToFunction(""..HideAll..""..ShowBloodcraft..""))
 
 --[[STAT ALLOCATION UI]]--
     local StatFrame_CloseButton = AIO:CreateFrame("Button", "StatFrame_CloseButton", StatFrame, "UIPanelCloseButton")
@@ -327,28 +405,174 @@ require("AIO")
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
 	StatFrame_TitleBar:SetPoint("TOP", 0, 9)
-	
     local StatFrame_TitleText = StatFrame_TitleBar:CreateFontString("StatFrame_TitleText")
     StatFrame_TitleText:SetFont("Fonts\\FRIZQT__.TTF", 13)
     StatFrame_TitleText:SetSize(190, 5)
     StatFrame_TitleText:SetPoint("CENTER", 0, 0)
     StatFrame_TitleText:SetText("|cffFFC125Stat Allocation|r")
+	
+    local StatFrame_Panel = AIO:CreateFrame("Frame", "StatFrame_Panel", StatFrame, nil)
+    StatFrame_Panel:SetSize(179, 110)
+    StatFrame_Panel:SetPoint("LEFT", 10, 69.5)
+    StatFrame_Panel:SetBackdrop({
+        bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+        tile = true,
+        edgeSize = 16,
+        tileSize = 16,
+        insets = { left = 5, right = 5, top = 5, bottom = 5 }
+    })
+	
+	--Stat Names
+    local StatNames = AIO:CreateFrame("Button", "StatNames", StatFrame, nil)
+    StatNames:SetSize(60, 100)
+    StatNames:SetPoint("TOPLEFT", 15, -37.5)
+    local Strength_Text = StatNames:CreateFontString("Strength_Text")
+    Strength_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+    Strength_Text:SetSize(137, 5)
+    Strength_Text:SetPoint("TOP", 0, 0)
+    Strength_Text:SetText("Strength")
+    local Stamina_Text = StatNames:CreateFontString("Stamina_Text")
+    Stamina_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+    Stamina_Text:SetSize(137, 5)
+    Stamina_Text:SetPoint("TOP", -1, -20)
+    Stamina_Text:SetText("Stamina")
+    local Agility_Text = StatNames:CreateFontString("Agility_Text")
+    Agility_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+    Agility_Text:SetSize(137, 5)
+    Agility_Text:SetPoint("TOP", -7, -40)
+    Agility_Text:SetText("Agility")
+    local Intellect_Text = StatNames:CreateFontString("Intellect_Text")
+    Intellect_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+    Intellect_Text:SetSize(137, 5)
+    Intellect_Text:SetPoint("TOP", -2.2, -60)
+    Intellect_Text:SetText("Intellect")
+    local Spirit_Text = StatNames:CreateFontString("Spirit_Text")
+    Spirit_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+    Spirit_Text:SetSize(137, 5)
+    Spirit_Text:SetPoint("TOP", -10.5, -80)
+    Spirit_Text:SetText("Spirit")
 
+	--Allocation Buttons
+    local Inc_Str = AIO:CreateFrame("Button", "Inc_Str", StatFrame, nil)
+    Inc_Str:SetSize(20, 20)
+    Inc_Str:SetPoint("TOPRIGHT", -20, -30)
+    Inc_Str:SetEnabledMouse(true)
+	Inc_Str:SetNormalTexture("Interface/BUTTONS/UI-SpellbookIcon-NextPage-Up")
+    Inc_Str:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
+    Inc_Str:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-NextPage-Down")
+	
+    local Dec_Str = AIO:CreateFrame("Button", "Dec_Str", StatFrame, nil)
+    Dec_Str:SetSize(20, 20)
+    Dec_Str:SetPoint("TOPRIGHT", -60, -30)
+    Dec_Str:SetEnabledMouse(true)
+	Dec_Str:SetNormalTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Up")
+    Dec_Str:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
+    Dec_Str:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Down")
+	
+    local Inc_Sta = AIO:CreateFrame("Button", "Inc_Sta", StatFrame, nil)
+    Inc_Sta:SetSize(20, 20)
+    Inc_Sta:SetPoint("TOPRIGHT", -20, -50)
+    Inc_Sta:SetEnabledMouse(true)
+	Inc_Sta:SetNormalTexture("Interface/BUTTONS/UI-SpellbookIcon-NextPage-Up")
+    Inc_Sta:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
+    Inc_Sta:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-NextPage-Down")
+	
+    local Dec_Sta = AIO:CreateFrame("Button", "Dec_Sta", StatFrame, nil)
+    Dec_Sta:SetSize(20, 20)
+    Dec_Sta:SetPoint("TOPRIGHT", -60, -50)
+    Dec_Sta:SetEnabledMouse(true)
+	Dec_Sta:SetNormalTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Up")
+    Dec_Sta:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
+    Dec_Sta:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Down")
+	
+    local Inc_Agi = AIO:CreateFrame("Button", "Inc_Agi", StatFrame, nil)
+    Inc_Agi:SetSize(20, 20)
+    Inc_Agi:SetPoint("TOPRIGHT", -20, -70)
+    Inc_Agi:SetEnabledMouse(true)
+	Inc_Agi:SetNormalTexture("Interface/BUTTONS/UI-SpellbookIcon-NextPage-Up")
+    Inc_Agi:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
+    Inc_Agi:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-NextPage-Down")
+	
+    local Dec_Agi = AIO:CreateFrame("Button", "Dec_Agi", StatFrame, nil)
+    Dec_Agi:SetSize(20, 20)
+    Dec_Agi:SetPoint("TOPRIGHT", -60, -70)
+    Dec_Agi:SetEnabledMouse(true)
+	Dec_Agi:SetNormalTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Up")
+    Dec_Agi:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
+    Dec_Agi:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Down")
+	
+    local Inc_Inte = AIO:CreateFrame("Button", "Inc_Inte", StatFrame, nil)
+    Inc_Inte:SetSize(20, 20)
+    Inc_Inte:SetPoint("TOPRIGHT", -20, -90)
+    Inc_Inte:SetEnabledMouse(true)
+	Inc_Inte:SetNormalTexture("Interface/BUTTONS/UI-SpellbookIcon-NextPage-Up")
+    Inc_Inte:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
+    Inc_Inte:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-NextPage-Down")
+	
+    local Dec_Inte = AIO:CreateFrame("Button", "Dec_Inte", StatFrame, nil)
+    Dec_Inte:SetSize(20, 20)
+    Dec_Inte:SetPoint("TOPRIGHT", -60, -90)
+    Dec_Inte:SetEnabledMouse(true)
+	Dec_Inte:SetNormalTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Up")
+    Dec_Inte:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
+    Dec_Inte:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Down")
+	
+    local Inc_Spi = AIO:CreateFrame("Button", "Inc_Spi", StatFrame, nil)
+    Inc_Spi:SetSize(20, 20)
+    Inc_Spi:SetPoint("TOPRIGHT", -20, -110)
+    Inc_Spi:SetEnabledMouse(true)
+	Inc_Spi:SetNormalTexture("Interface/BUTTONS/UI-SpellbookIcon-NextPage-Up")
+    Inc_Spi:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
+    Inc_Spi:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-NextPage-Down")
+	
+    local Dec_Spi = AIO:CreateFrame("Button", "Dec_Spi", StatFrame, nil)
+    Dec_Spi:SetSize(20, 20)
+    Dec_Spi:SetPoint("TOPRIGHT", -60, -110)
+    Dec_Spi:SetEnabledMouse(true)
+	Dec_Spi:SetNormalTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Up")
+    Dec_Spi:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
+    Dec_Spi:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Down")
+
+local str = 0
+local sta = 0
+local agi = 0
+local inte = 0
+local spi = 0
+local statpoints = 0
+--[[GET STAT SQL DATA]]--
+
+local function GetStats(player)
+	statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
+    statpoints = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow().."")
+    str = statquery:GetUInt32(0)
+    agi = statquery:GetUInt32(1)
+    sta = statquery:GetUInt32(2)
+    inte = statquery:GetUInt32(3)
+    spi = statquery:GetUInt32(4)
+	statpoints = statpoints:GetUInt32(0)
+end
+
+local Str_Value = StatNames:CreateFontString("Str_Value")
+Str_Value:SetFont("Fonts\\FRIZQT__.TTF", 11)
+Str_Value:SetSize(137, 5)
+Str_Value:SetPoint("TOP", 104.8, 0)
+Str_Value:SetText(""..str.."")
+	
+--[[SEND UI]]--
     local FrameUI = AIO:CreateMsg()
-    FrameUI:Append(Frame)
-
     local TrainingFrameUI = AIO:CreateMsg()
-    TrainingFrameUI:Append(TrainingFrame)
-	
     local StatFrameUI = AIO:CreateMsg()
-    TrainingFrameUI:Append(StatFrame)
+    FrameUI:Append(Frame)
+    TrainingFrameUI:Append(TrainingFrame)
+    StatFrameUI:Append(StatFrame)
 	
-
-function SidePanel(event, player)
+function SidePanel(player)
     player:SendBroadcastMessage("[DEBUG]: SideBar activated.")
 
     FrameUI:SendIgnoreIf(Frame, player)
     TrainingFrameUI:SendIgnoreIf(TrainingFrame, player)
+	StatFrameUI:SendIgnoreIf(StatFrame, player)
 
     -- Send Frame
     Frame:Send(player)
@@ -358,9 +582,17 @@ function SidePanel(event, player)
     -- Send Frame Children
     TrainingFrame:Send(player)
     TrainingFrame:Clear()
+	StatFrame:Send(player)
+	StatFrame:Clear()
 
     return false
 end
 
-RegisterPlayerEvent(3, SidePanel)
-RegisterPlayerEvent(18, SidePanel)
+function AddInitMsg(event, player)
+	AIO:AddInitFunc(GetStats)
+	AIO:AddInitMsg(Frame)
+	AIO:AddInitMsg(TrainingFrame)
+	AIO:AddInitMsg(StatFrame)
+end
+
+RegisterPlayerEvent(3, AddInitMsg)
