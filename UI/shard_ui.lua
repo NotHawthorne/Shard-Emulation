@@ -4,6 +4,26 @@ require("AIO")
 --Global vars
 pointgain = 6    --Stat points gained per level
 
+local queryvals = {
+	0,
+	0,
+	0,
+	0,
+	0,
+	0
+	}
+--[[GET STAT SQL DATA]]--
+local function GetStats(player)
+	statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
+    statpoints = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow().."")
+    queryvals[0] = statquery:GetUInt32(0)
+    queryvals[1] = statquery:GetUInt32(1)
+    queryvals[2] = statquery:GetUInt32(2)
+    queryvals[3] = statquery:GetUInt32(3)
+    queryvals[4] = statquery:GetUInt32(4)
+	queryvals[5] = statpoints:GetUInt32(0)
+end
+
 --[[STATIC SIDEBAR]]--
     local Frame = AIO:CreateFrame("Frame", "FrameTest", "UIParent", nil)
     Frame:SetSize(42, 179)
@@ -174,12 +194,12 @@ pointgain = 6    --Stat points gained per level
     local TrainingFrame_CategoryText = TrainingFrame_CategoryPanel:CreateFontString("TrainingFrame_CategoryText")
     TrainingFrame_CategoryText:SetFont("Fonts\\FRIZQT__.TTF", 11)
     TrainingFrame_CategoryText:SetSize(190, 5)
-    TrainingFrame_CategoryText:SetPoint("TOP", 0, 13)
+    TrainingFrame_CategoryText:SetPoint("TOP", -5, 13)
     TrainingFrame_CategoryText:SetText("Focus")
 
     local TrainingFrame_SpellPanel = AIO:CreateFrame("Frame", "TrainingFrame_SpellPanel", TrainingFrame, nil)
     TrainingFrame_SpellPanel:SetSize(150, 250)
-    TrainingFrame_SpellPanel:SetPoint("CENTER", 0, -15)
+    TrainingFrame_SpellPanel:SetPoint("CENTER", -5, -15)
     TrainingFrame_SpellPanel:SetBackdrop({
         bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
         edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
@@ -193,6 +213,42 @@ pointgain = 6    --Stat points gained per level
     TrainingFrame_SpellNamePanel:SetSize(120, 36)
     TrainingFrame_SpellNamePanel:SetPoint("RIGHT", -50, 90)
     TrainingFrame_SpellNamePanel:SetBackdrop({
+        bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+        tile = true,
+        edgeSize = 16,
+        tileSize = 16,
+        insets = { left = 5, right = 5, top = 5, bottom = 5 }
+    })
+	
+    local TrainingFrame_AdvancePanel = AIO:CreateFrame("Frame", "TrainingFrame_AdvancePanel", TrainingFrame, nil)
+    TrainingFrame_AdvancePanel:SetSize(70, 36)
+    TrainingFrame_AdvancePanel:SetPoint("BOTTOMRIGHT", -100, 10)
+    TrainingFrame_AdvancePanel:SetBackdrop({
+        bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+        tile = true,
+        edgeSize = 16,
+        tileSize = 16,
+        insets = { left = 5, right = 5, top = 5, bottom = 5 }
+    })
+	
+    local TrainingFrame_RevertPanel = AIO:CreateFrame("Frame", "TrainingFrame_RevertPanel", TrainingFrame, nil)
+    TrainingFrame_RevertPanel:SetSize(70, 36)
+    TrainingFrame_RevertPanel:SetPoint("BOTTOMRIGHT", -10, 10)
+    TrainingFrame_RevertPanel:SetBackdrop({
+        bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
+        edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+        tile = true,
+        edgeSize = 16,
+        tileSize = 16,
+        insets = { left = 5, right = 5, top = 5, bottom = 5 }
+    })
+	
+    local TrainingFrame_PlayerInfoPanel = AIO:CreateFrame("Frame", "TrainingFrame_PlayerInfoPanel", TrainingFrame, nil)
+    TrainingFrame_PlayerInfoPanel:SetSize(160, 36)
+    TrainingFrame_PlayerInfoPanel:SetPoint("BOTTOMRIGHT", -10, 50)
+    TrainingFrame_PlayerInfoPanel:SetBackdrop({
         bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
         edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
         tile = true,
@@ -224,6 +280,30 @@ pointgain = 6    --Stat points gained per level
         tileSize = 16,
         insets = { left = 5, right = 5, top = 5, bottom = 5 }
     })
+    local TrainText = TrainingFrame_AdvancePanel:CreateFontString("TrainText")
+    TrainText:SetFont("Fonts\\FRIZQT__.TTF", 11)
+    TrainText:SetSize(70, 36)
+    TrainText:SetPoint("CENTER", 0, 0)
+    TrainText:SetText("Increase\nSkill|r")
+	TrainText:Hide()
+    local UnTrainText = TrainingFrame_RevertPanel:CreateFontString("UnTrainText")
+    UnTrainText:SetFont("Fonts\\FRIZQT__.TTF", 11)
+    UnTrainText:SetSize(70, 36)
+    UnTrainText:SetPoint("CENTER", 0, 0)
+    UnTrainText:SetText("Decrease\nSkill|r")
+	UnTrainText:Hide()
+	Current_Info1 = TrainingFrame_PlayerInfoPanel:CreateFontString("Current_Info1")
+	Current_Info1:SetSize(100, 24)
+	Current_Info1:SetPoint("TOPLEFT", 0, 0)
+	Current_Info1:SetFont("Fonts\\FRIZQT__.TTF", 9)
+	Current_Info1:SetText("Current Skill Level: ")
+	Current_Info2 = TrainingFrame_PlayerInfoPanel:CreateFontString("Current_Info2")
+	Current_Info2:SetSize(110, 24)
+	Current_Info2:SetPoint("BOTTOMLEFT", 0, 0)
+	Current_Info2:SetFont("Fonts\\FRIZQT__.TTF", 9)
+	Current_Info2:SetText("Available Skill Points: ")
+	Current_Info1:Hide()
+	Current_Info2:Hide()
 	--[[DEFINE SPELL TRAINING FRAMES]]--
 		local HolyBonds_Icon = AIO:CreateFrame("Button", "HolyBonds_Icon", TrainingFrame, nil)
 		HolyBonds_Icon:SetSize(32, 32)
@@ -252,10 +332,40 @@ pointgain = 6    --Stat points gained per level
 		HolyBonds_Info2:SetText("Requires Level: 5")
 	
 	--[[DEFINE SPELL SELECTION BUTTONS]]--
+		--Liturgy
+		local Liturgy_Icon = AIO:CreateFrame("Button", "Liturgy_Icon", TrainingFrame, nil)
+		Liturgy_Icon:SetSize(32, 32)
+		Liturgy_Icon:SetPoint("RIGHT", -14, 90)
+		Liturgy_Icon:SetToplevel(true)
+		Liturgy_Icon:SetClampedToScreen(true)
+		Liturgy_Icon:SetBackdrop({
+			bgFile = "Interface/ICONS/Spell_Holy_BlessedResillience"
+		})
+		Liturgy_Info = Liturgy_Icon:CreateFontString("Liturgy_Info")
+		Liturgy_Info:SetFont("Fonts\\FRIZQT__.TTF", 9)
+		Liturgy_Info:SetSize(150, 150)
+		Liturgy_Info:SetPoint("CENTER", -80, 6)
+		Liturgy_Info:SetText("Requires Liturgist")
+		Liturgy_Desc = Liturgy_Icon:CreateFontString("Liturgy_Desc")
+		Liturgy_Desc:SetFont("Fonts\\FRIZQT__.TTF", 11)
+		Liturgy_Desc:SetSize(150, 150)
+		Liturgy_Desc:SetPoint("LEFT", -119, -50)
+		Liturgy_Desc:SetText("|cffFFC125A powerful school of light magic, which provides a toolkit to invoke holy vengeance upon your foes for their indiscretions.|r")
+		Liturgy_Info2 = Liturgy_Icon:CreateFontString("Liturgy_Info2")
+		Liturgy_Info2:SetFont("Fonts\\FRIZQT__.TTF", 9)
+		Liturgy_Info2:SetSize(150, 150)
+		Liturgy_Info2:SetPoint("CENTER", -80, -6)
+		Liturgy_Info2:SetText("Requires Mage, Healer")
+		
+		Liturgy_Icon:Hide()
+		Liturgy_Info:Hide()
+		Liturgy_Desc:Hide()
+		Liturgy_Info2:Hide()
+		
 		--Holy Bonds
         local HolyBonds_Button = AIO:CreateFrame("Button", "HolyBonds_Button", TrainingFrame, nil)
         HolyBonds_Button:SetSize(137, 13)
-        HolyBonds_Button:SetPoint("TOP", 0, -50)
+        HolyBonds_Button:SetPoint("TOP", -5, -50)
         HolyBonds_Button:SetEnabledMouse(true)
         HolyBonds_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
         HolyBonds_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
@@ -264,11 +374,12 @@ pointgain = 6    --Stat points gained per level
 		HolyBonds_Desc:Show()
 		HolyBonds_Info:Show()
 		HolyBonds_Info2:Show()
+		Liturgy_Icon:Hide() Liturgy_Desc:Hide() Liturgy_Info:Hide() Liturgy_Info2:Hide() Liturgy_TrainButton:Hide()  
 		]]))
         local HolyBonds_Text = HolyBonds_Button:CreateFontString("HolyBonds_Text")
         HolyBonds_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
         HolyBonds_Text:SetSize(137, 5)
-        HolyBonds_Text:SetPoint("CENTER", 0, 0)
+        HolyBonds_Text:SetPoint("CENTER", -5, 0)
         HolyBonds_Text:SetText("Holy Bonds")
 		
 		HolyBonds_Icon:Hide()
@@ -279,14 +390,14 @@ pointgain = 6    --Stat points gained per level
 		--Smite
         local Smite_Button = AIO:CreateFrame("Button", "Smite_Button", TrainingFrame, nil)
         Smite_Button:SetSize(137, 13)
-        Smite_Button:SetPoint("TOP", 0, -65)
+        Smite_Button:SetPoint("TOP", -5, -65)
         Smite_Button:SetEnabledMouse(true)
         Smite_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
         Smite_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
         local Smite_Text = Smite_Button:CreateFontString("Smite_Text")
         Smite_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
         Smite_Text:SetSize(137, 5)
-        Smite_Text:SetPoint("CENTER", 0, 0)
+        Smite_Text:SetPoint("CENTER", -5, 0)
         Smite_Text:SetText("Smite")
 		Smite_Text:Hide()
 		Smite_Button:Hide()
@@ -294,14 +405,14 @@ pointgain = 6    --Stat points gained per level
 		--Bloodbolt
         local Bloodbolt_Button = AIO:CreateFrame("Button", "Bloodbolt_Button", TrainingFrame, nil)
         Bloodbolt_Button:SetSize(137, 13)
-        Bloodbolt_Button:SetPoint("TOP", 0, -50)
+        Bloodbolt_Button:SetPoint("TOP", -5, -50)
         Bloodbolt_Button:SetEnabledMouse(true)
         Bloodbolt_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
         Bloodbolt_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
         local Bloodbolt_Text = Bloodbolt_Button:CreateFontString("Bloodbolt_Text")
         Bloodbolt_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
         Bloodbolt_Text:SetSize(137, 5)
-        Bloodbolt_Text:SetPoint("CENTER", 0, 0)
+        Bloodbolt_Text:SetPoint("CENTER", -5, 0)
         Bloodbolt_Text:SetText("Bloodbolt")
 		Bloodbolt_Text:Hide()
 		Bloodbolt_Button:Hide()
@@ -319,6 +430,13 @@ pointgain = 6    --Stat points gained per level
         Liturgy_Text:SetSize(137, 5)
         Liturgy_Text:SetPoint("CENTER", 0, 0)
         Liturgy_Text:SetText("Liturgy")
+        local Liturgy_TrainButton = AIO:CreateFrame("Button", "Liturgy_TrainButton", TrainingFrame, nil)
+        Liturgy_TrainButton:SetSize(65, 30)
+        Liturgy_TrainButton:SetPoint("BOTTOMRIGHT", -102.5, 13.5)
+        Liturgy_TrainButton:SetEnabledMouse(true)
+        Liturgy_TrainButton:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+        Liturgy_TrainButton:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+		Liturgy_TrainButton:Hide()
 		
 		--Bloodcraft
         local Bloodcraft_Button = AIO:CreateFrame("Button", "Bloodcraft_Button", TrainingFrame, nil)
@@ -373,13 +491,17 @@ pointgain = 6    --Stat points gained per level
         Shamanism_Text:SetText("Shamanism")
 		
 		local HideAll = [[
+		TrainText:Hide() UnTrainText:Hide() Current_Info1:Hide() Current_Info2:Hide()
 		HolyBonds_Text:Hide() HolyBonds_Button:Hide() HolyBonds_Desc:Hide() HolyBonds_Icon:Hide() HolyBonds_Info:Hide() HolyBonds_Info2:Hide()
 		Smite_Text:Hide() Smite_Button:Hide()
 		Bloodbolt_Text:Hide() Bloodbolt_Button:Hide()
+		Liturgy_Icon:Hide() Liturgy_Desc:Hide() Liturgy_Info:Hide() Liturgy_Info2:Hide() Liturgy_TrainButton:Hide() 
 		]]
 		local ShowLiturgy = [[
+		TrainText:Show() UnTrainText:Show() Current_Info1:Show() Current_Info2:Show()
 		HolyBonds_Text:Show() HolyBonds_Button:Show()
 		Smite_Text:Show() Smite_Button:Show()
+		Liturgy_Icon:Show() Liturgy_Desc:Show() Liturgy_Info:Show() Liturgy_Info2:Show() Liturgy_TrainButton:Show() 
 		]]
 		local ShowBloodcraft = [[
 		Bloodbolt_Text:Show() Bloodbolt_Button:Show()
@@ -387,6 +509,9 @@ pointgain = 6    --Stat points gained per level
 		
 		Liturgy_Button:SetScript("OnMouseUp", AIO:ToFunction(""..HideAll..""..ShowLiturgy..""))
 		Bloodcraft_Button:SetScript("OnMouseUp", AIO:ToFunction(""..HideAll..""..ShowBloodcraft..""))
+		Beastmastery_Button:SetScript("OnMouseUp", AIO:ToFunction(""..HideAll..""))
+		WeaponMastery_Button:SetScript("OnMouseUp", AIO:ToFunction(""..HideAll..""))
+		Shamanism_Button:SetScript("OnMouseUp", AIO:ToFunction(""..HideAll..""))
 
 --[[STAT ALLOCATION UI]]--
     local StatFrame_CloseButton = AIO:CreateFrame("Button", "StatFrame_CloseButton", StatFrame, "UIPanelCloseButton")
@@ -534,31 +659,11 @@ pointgain = 6    --Stat points gained per level
     Dec_Spi:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
     Dec_Spi:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Down")
 
-local str = 0
-local sta = 0
-local agi = 0
-local inte = 0
-local spi = 0
-local statpoints = 0
---[[GET STAT SQL DATA]]--
+	local Str_Value = StatNames:CreateFontString("Str_Value")
+	Str_Value:SetFont("Fonts\\FRIZQT__.TTF", 11)
+	Str_Value:SetSize(137, 5)
+	Str_Value:SetPoint("TOP", 104.8, 0)
 
-local function GetStats(player)
-	statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-    statpoints = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow().."")
-    str = statquery:GetUInt32(0)
-    agi = statquery:GetUInt32(1)
-    sta = statquery:GetUInt32(2)
-    inte = statquery:GetUInt32(3)
-    spi = statquery:GetUInt32(4)
-	statpoints = statpoints:GetUInt32(0)
-end
-
-local Str_Value = StatNames:CreateFontString("Str_Value")
-Str_Value:SetFont("Fonts\\FRIZQT__.TTF", 11)
-Str_Value:SetSize(137, 5)
-Str_Value:SetPoint("TOP", 104.8, 0)
-Str_Value:SetText(""..str.."")
-	
 --[[SEND UI]]--
     local FrameUI = AIO:CreateMsg()
     local TrainingFrameUI = AIO:CreateMsg()
@@ -588,11 +693,20 @@ function SidePanel(player)
     return false
 end
 
-function AddInitMsg(event, player)
-	AIO:AddInitFunc(GetStats)
+function ShardUI_init(event, player)
+    stats = {}
+    statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
+	statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
+    stats["str"] = statquery:GetUInt32(0)
+    stats["agi"] = statquery:GetUInt32(1)
+    stats["sta"] = statquery:GetUInt32(2)
+    stats["inte"] = statquery:GetUInt32(3)
+    stats["spi"] = statquery:GetUInt32(4)
+	statpoints = statpointquery:GetUInt32(0)
+	Str_Value:SetText(""..stats["str"])
 	AIO:AddInitMsg(Frame)
 	AIO:AddInitMsg(TrainingFrame)
 	AIO:AddInitMsg(StatFrame)
 end
 
-RegisterPlayerEvent(3, AddInitMsg)
+RegisterPlayerEvent(3, ShardUI_init)
