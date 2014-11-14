@@ -2,14 +2,12 @@
 local AIO = require("AIO")
 
 --DEFINE VARS
-local leveldiff = 5   --[[Amount of levels higher someone can be than the
-                          person they're killing and still recieve an HK]]
-						  
-local decaytime = 15   --Time in seconds it takes for belongings to decay
+local leveldiff = 5         --Amount of levels higher someone can be than the person they're killing and still recieve an HK
+local decaytime = 300       --Time in seconds it takes for belongings to decay
+local creaturedeath = false --Enable inventory dropping on creature death?
 
 guid_linking_table = {}
 item_table = {}
-
 
 --DEFINE LOOT FRAME
 local FullLootFrame = AIO:CreateFrame("Frame", "FullLootFrame", "UIParent", nil)
@@ -171,7 +169,6 @@ local function FFAPvP(event, pKiller, pKilled)
 		elseif (pKiller:GetClass()==12) then killer_color = "EB2FDE" end
 		
 	if ((pKiller:GetLevel()-pKilled:GetLevel())<=leveldiff) then
-		local receiver = pKiller:GetGUIDLow()
 		local pKilledGUID = pKilled:GetGUIDLow()
 		local pKillerGUID = pKiller:GetGUIDLow()
 		local x,y,z,o = pKilled:GetX(),pKilled:GetY(),pKilled:GetZ(),pKilled:GetO()
@@ -216,6 +213,33 @@ local function FFAPvP(event, pKiller, pKilled)
 	end
 end
 
+local function CreatureDeath (event, pKiller, pKilled)
+	if (creaturedeath==true) then
+	local pKilledGUID = pKilled:GetGUIDLow()
+	local x,y,z,o = pKilled:GetX(),pKilled:GetY(),pKilled:GetZ(),pKilled:GetO()
+	local ContainerID = 818001
+	local kill_message = math.random(1,6)
+	local FullLootContainer = pKiller:SummonGameObject(ContainerID, x, y, z, 2.5, 0)			--Spawn a Sack of Belongings
+	FullLootContainer:RegisterEvent(Remove_FullLootContainer, decaytime*1000, 0)				--Register the Remove/Despawn event to the Sack of Belongings
+	guid_linking_table[""..FullLootContainer:GetGUIDLow()] = pKilled:GetGUIDLow()
+	--Get Items
+	local bagslot = 255
+	local inven_ticker = 0
+	local item_ticker = 0
+	local maxitems = 25 --Equal to amount of buttons that I have declared.
+	item_table[""..FullLootContainer:GetGUIDLow()] = {}
+	repeat
+		inven_ticker = inven_ticker+1
+		local checkitem = pKilled:GetItemByPos(255, inven_ticker)
+		if (checkitem~=nil) and (checkitem:IsBag()==false) and (checkitem:GetEntry()~=6948) then
+			item_ticker = item_ticker+1
+			table.insert (item_table[""..FullLootContainer:GetGUIDLow()], {checkitem:GetItemLink(), checkitem:GetEntry(), pKilled:GetItemCount(checkitem:GetEntry()), pKilled:GetName()})
+			--pKilled:RemoveItem(checkitem:GetEntry(), pKilled:GetItemCount(checkitem:GetEntry()))
+		end
+	until (inven_ticker>=38) or (item_ticker>=maxitems)
+	end
+end
+
 local function AddItem(player)
 player:SendBroadcastMessage("Function triggered")
 end
@@ -245,16 +269,18 @@ local function Init_FullLootFrame(event, player, object)
 			FullLoot_Text:SetText(""..v[1].." x"..v[3])
 			FullLoot_Text:SetJustifyH("LEFT")
 			local function AddItem(player)
-				FullLootFrame:Hide()
 				FullLootFrame:Clear()
+				FullLoot_Button:Hide()
+				FullLoot_Text:SetText("|cff9d9d9dLooted Item|r")
 				player:SendBroadcastMessage("You got a "..v[1])
 				player:AddItem(v[2], v[3])
-				FullLootFrame:Send()
-				FullLootFrame:Show()
+				FullLootFrame:Send(player)
 			end
 			FullLoot_Button:SetScript("OnMouseUp", AddItem, AIO:ObjDo(""))
+			FullLoot_Button:Show()
+			FullLoot_Text:Show()
 		else
-			player:SendBroadcastMessage("kek")
+			player:SendBroadcastMessage("Ran out of available button slots.")
 		end
 	end
 	if (item_ticker1<25) then
@@ -297,7 +323,8 @@ end
 --end
 
 AIO:AddInitMsg(FullLootFrame)
-RegisterPlayerEvent(6, FFAPvP)										--Triggered when player dies
+RegisterPlayerEvent(6, FFAPvP)										--Triggered when player dies to player
+RegisterPlayerEvent(8, CreatureDeath)								--Triggered when player dies to creature
 RegisterGameObjectGossipEvent(818001, 1, RequestThings)
 RegisterPlayerEvent(42, ClearTable)
 --RegisterGameObjectGossipEvent(818001, 1, Init_FullLootFrame)
