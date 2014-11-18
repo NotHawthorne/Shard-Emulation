@@ -4,7 +4,8 @@ local AIO = require("AIO")
 --DEFINE VARS
 local leveldiff = 5         --Amount of levels higher someone can be than the person they're killing and still recieve an HK
 local decaytime = 300       --Time in seconds it takes for belongings to decay
-local creaturedeath = false --Enable inventory dropping on creature death?
+local creaturedeath = true  --Enable inventory dropping on creature death?
+local playerdeath = true    --Enable inventory dropping on player death?
 
 guid_linking_table = {}
 item_table = {}
@@ -125,7 +126,8 @@ local function Remove_FullLootContainer(event, delay, call, object)
 	item_table[""..object:GetGUIDLow()] = nil
 end
 
-local function FFAPvP(event, pKiller, pKilled)
+local function EntropyPvP(event, pKiller, pKilled)
+	if (playerdeath==true) then
 		--Fetch PvP Stats
 		killerstats = CharDBQuery("SELECT honorable_kills,dishonorable_kills FROM shard_pvp_stats WHERE playerguid="..pKiller:GetGUIDLow().."")
 		--Fetch Guild Names
@@ -210,6 +212,7 @@ local function FFAPvP(event, pKiller, pKilled)
 	else
 		CharDBExecute("UPDATE shard_pvp_stats SET dishonorable_kills="..(killerstats:GetUInt32(1)+1).." WHERE playerguid = "..pKiller:GetGUIDLow().."")
 		SendWorldMessage("[PvP]: |cffff0000Everyone give a big round of applause to|r |CFF"..killer_color..""..pKiller:GetName().."|r |cffff0000"..killerguild_name..", whom is level "..pKiller:GetLevel()..", killed|r |CFF"..killed_color..""..pKilled:GetName().."|r|cffff0000, a level "..pKilled:GetLevel()..".|r")
+	end
 	end
 end
 
@@ -302,7 +305,7 @@ local function Init_FullLootFrame(event, player, object)
 	FullLootFrame:Show()
 end
 
-local function RequestThings(event, player, object)
+local function Container_Interact(event, player, object)
 	Init_FullLootFrame(event, player, object)
 	FullLootFrame:Send(player)
 	FullLootFrame:Show()
@@ -310,21 +313,56 @@ local function RequestThings(event, player, object)
 	return false
 end
 
-local function ClearTable(event, player, command)
-	if (command=="shard tables clear") then
-		guid_linking_table = {}
-		print("[SHARD]: GUID TABLES CLEARED")
-		item_table = {}
-		print("[SHARD]: ITEM CACHE CLEARED")
-		SendWorldMessage("Shard tables cleared.")
+local function ShardPvPCommands(event, player, msg)
+	if (player:IsGM()) then
+		if (msg=="#shard playerdeath on") then
+			if (playerdeath==true) then
+				player:SendBroadcastMessage("Shard PvP already active.")
+				return false
+			else
+				player:SendBroadcastMessage("Shard PvP activated.")
+				playerdeath = true
+				return false
+			end
+		end
+		if (msg=="#shard playerdeath off") then
+			if (playerdeath==false) then
+				player:SendBroadcastMessage("Shard PvP already inactive.")
+				return false
+			else
+				player:SendBroadcastMessage("Shard PvP deactivated.")
+				playerdeath = false
+				return false
+			end
+		end
+		if (msg=="#shard creaturedeath on") then
+			if (creaturedeath==true) then
+				player:SendBroadcastMessage("Shard PvE already active.")
+				return false
+			else
+				player:SendBroadcastMessage("Shard PvE activated.")
+				creaturedeath = true
+				return false
+			end
+		end
+		if (msg=="#shard creaturedeath off") then
+			if (creaturedeath==false) then
+				player:SendBroadcastMessage("Shard PvE already inactive.")
+				return false
+			else
+				player:SendBroadcastMessage("Shard PvE deactivated.")
+				creaturedeath = false
+				return false
+			end
+		end
+	else
+		player:SendBroadcastMessage("You do not have access to this function.")
+		return false
 	end
 end
-	
---end
 
 AIO:AddInitMsg(FullLootFrame)
-RegisterPlayerEvent(6, FFAPvP)										--Triggered when player dies to player
+RegisterPlayerEvent(6, EntropyPvP)										--Triggered when player dies to player
 RegisterPlayerEvent(8, CreatureDeath)								--Triggered when player dies to creature
-RegisterGameObjectGossipEvent(818001, 1, RequestThings)
-RegisterPlayerEvent(42, ClearTable)
---RegisterGameObjectGossipEvent(818001, 1, Init_FullLootFrame)
+RegisterGameObjectGossipEvent(818001, 1, Container_Interact)
+RegisterPlayerEvent(18, ShardPvPCommands)
