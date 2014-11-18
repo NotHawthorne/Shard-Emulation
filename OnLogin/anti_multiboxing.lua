@@ -20,3 +20,5 @@ end
 --RegisterPlayerEvent(3, multiboxing)
 
 --Disabled for testing. -NotHawthorne
+
+--Should not be enabled. -Marcus

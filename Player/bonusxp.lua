@@ -1,27 +1,36 @@
-local function bonusxp (event, killer, killed)
-	if killer:IsInGroup() then
-		local lvl = killed:GetLevel()
-		local lvl2 = killer:GetLevel()
-		if (lvl2-lvl>4) then
-			killer:SendBroadcastMessage("No bonus experience because the mob you killed is far less powerful than you.")
-		else
-			killer:GiveXP((lvl*24), killer)
-			killer:SendBroadcastMessage("You gain "..(lvl*24).." bonus experience from being in a group!")
-		end
-	end
-	if (killer:GetLevel()==25) and (((killer:GetLevel())-(killed:GetLevel()))<1) then
-		chancetoproc = math.random(100, 100)
-		if (chancetoproc==100) then
-			query = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..killer:GetGUIDLow().."")
-			points = (query:GetUInt32(0))+1
-			CharDBExecute("UPDATE shard_aa_points SET points="..points.." WHERE playerguid="..killer:GetGUIDLow().."")
-			killer:SendBroadcastMessage("|cff41E62EYou've gained an Alternate Advancement point! Total points: "..points.."")
+bonus_xp_system = {}
+bonus_xp_system.creature_exceptions = {} -- By Id
+function bonus_xp_system.check(group, killed_level)
+	for k, v in ipairs(group) do
+		sub_level = v:GetLevel() - killed_level
+		if(sub_level) > 4) then
+			bonus_xp_system.give(v, v:GetLevel() * 24)
 		end
 	end
 end
---RegisterPlayerEvent(7, bonusxp)
+function bonus_xp_system.give(player, xp_to_give)
+	player:GiveXP(xp_to_give)
+	player:SendBroadCastMessage("You gain ".. bonus_xp .." bonus experience due to kill difficulty and grouping.")
+end
+function bonus_xp_system.initialize(event, killer, killed)
+		local stop = false
+		for _k, creature_entry in pairs(bonus_xp_system.creature_exceptions) do
+			if (creature_entry == killed:GetEntry()) then
+				stop = true
+			end
+		end
+		if ((killer:IsInGroup()) and (stop == false)) then
+			bonus_xp_system.check(killer:GetGroup(), killed:GetLevel())
+		end
+end
+RegisterPlayerEvent(7, bonus_xp_system.initialize)
 
 --[[
-Needs to be reworked so that
-everyone in the group recieves
-bonus exp.    -NotHawthorne  ]]
+	Should bonus XP be checked and calculated based on average level of group?
+	
+	-- If we need a check for pet/totem kill of creature
+	if(killer:GetOwner()) then
+		killer = killer:GetOwner()
+	end
+	if (killer:IsPlayer()) then --Check
+]]--

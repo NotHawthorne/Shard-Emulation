@@ -277,6 +277,9 @@ local function Init_FullLootFrame(event, player, object)
 				FullLoot_Text:SetText("|cff9d9d9dLooted Item|r")
 				player:SendBroadcastMessage("You got a "..v[1])
 				player:AddItem(v[2], v[3])
+				v = nil
+				table.remove(item_table[""..object:GetGUIDLow()], item_ticker1)
+				table.remove(item_table[""..object:GetGUIDLow()], k)
 				FullLootFrame:Send(player)
 			end
 			FullLoot_Button:SetScript("OnMouseUp", AddItem, AIO:ObjDo(""))

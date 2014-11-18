@@ -1,66 +1,43 @@
-function apply_allocation (event, player)
-	statdb = CharDBQuery("SELECT str, agi, sta, inte, spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-	allocated_str = statdb:GetUInt32(0)
-	allocated_agi = statdb:GetUInt32(1)
-	allocated_sta = statdb:GetUInt32(2)
-	allocated_inte = statdb:GetUInt32(3)
-	allocated_spi = statdb:GetUInt32(4)
+--stat_allocation_system
+sas = {}
+sas.getStats = nil
+sas.stas = {}
+function sas.apply_allocation(event, player)
+	
+	sas.getStats = CharDBQuery("SELECT str, agi, sta, inte, spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
+	sas.stats = {
+		["str"] = {sas.getStats:GetUInt32(0), 7464},
+		["agi"] = {sas.getStats:GetUInt32(1), 7471},
+		["sta"] = {sas.getStats:GetUInt32(2), 7477},
+		["inte"] = {sas.getStats:GetUInt32(3), 7468},
+		["spi"] = {sas.getStats:GetUInt32(4), 7474}
+	}
 
-	ticker1 = 0
-	ticker2 = 0
-	ticker3 = 0
-	ticker4 = 0
-	ticker5 = 0
-	ticker6 = 0
-
-	if (allocated_str>0) then
-		repeat
-			player:AddAura(7464, player)
-			ticker1 = ((ticker1)+1)
-		until (ticker1==allocated_str)
+	for stat, stat_data in pairs(sas.stats) do
+		if (stat_data[0] > 0) then
+			local i = 0
+			repeat
+				player:AddAura(spell_data[1], player)
+				i = i + 1
+			until (i == stat_data[0])
+		end
 	end
-	
-	if (allocated_agi>0) then
+	if ( sas.calculate_speed() > 0 ) then
+		local i = 1
 		repeat
-			player:AddAura(7471, player)
-			ticker2 = ((ticker2)+1)
-		until (ticker2==allocated_agi)
+			i = i + 0.01 
+		until ( i >= sas.calculate_speed() )
+		player:SetSpeed(1, i, true)
 	end
-	
-	if (allocated_sta>0) then
-		repeat
-			player:AddAura(7477, player)
-			ticker3 = ((ticker3)+1)
-		until (ticker3==allocated_sta)
-	end
-	
-	if (allocated_inte>0) then
-		repeat
-			player:AddAura(7468, player)
-			ticker4 = ((ticker4)+1)
-		until (ticker4==allocated_sta)
-	end
-	
-	if (allocated_spi>0) then
-		repeat
-			player:AddAura(7474, player)
-			ticker5 = ((ticker5)+1)
-		until (ticker5==allocated_sta)
-	end
-	
-	speed = ((player:GetStat(1)/80))
-	
-	if (speed>0) then
-		ticker6=1
-		repeat
-			ticker6 = ((ticker6)+0.01)
-		until (ticker6>=speed)
-		player:SetSpeed(1, ticker6, true)
-	end
-	
-	player:AddAura(7711, player)			--Modded in the DBC files, this is the auto attack energy aura now.
-		
+	player:AddAura(7711, player) --Modded in the DBC files, this is the auto attack energy aura now.
 end
 
+function sas.calculate_speed() --Created for advanced speed calculation later.
+	return sas.getStats:GetUInt32(1) / 80
+end
+RegisterPlayerEvent(3, sas.apply_allocation)
 
-RegisterPlayerEvent(3, apply_allocation)
+--[[
+	Mana regeneration should be moved here, along with stat registration.
+	This script should contain player_data_handling solely.
+]]
