@@ -1,17 +1,13 @@
 --[[DYNAMIC SPELL SYSTEM FUNCTIONS]]
-
 function SendDamage(player, target, spellID, amount, school)		--Sends damage to the target.
 	player:SendDamage(target, amount, spellID, school, false)
 end
-
 function SendHeal(player, target, spellID, amount)					--Heals the target.
 	player:DealHeal(target, spellID, amount, false)
 end
-
 function SendCooldown(player, spellID, duration)					--Sends the cooldown to the player.
 	player:SendCooldown(spellID, duration)
 end
-
 function SendAura(player, target, spellID, duration)				--Sets the duration of the effect on the target.
 	player:AddAura(spellID, target)
 	local aura = target:GetAura(spellID)
@@ -20,17 +16,6 @@ function SendAura(player, target, spellID, duration)				--Sets the duration of t
 		aura:SetDuration(duration)
 	end
 end
-
---[[COMMANDS]]
-function ShardCommands(event, player, msg, Type, lang)				--Reloads shard_spell_table
-	if (player:GetGMRank()==3) then
-		if (msg==ReloadSpellsCommand) then
-			CacheSpells()
-			return false
-		end
-	end
-end
-RegisterPlayerEvent(18, ShardCommands)
 
 --[[AUTO ATTACK]]
 function auto_attack(event, player, spell)
@@ -160,7 +145,78 @@ function On_LogIn (event, player)
 
 	player:RemoveSpell(668, player)
 	player:LearnSpell(668, player)			--Language glitch band-aid.
-	
+
 end
 
 RegisterPlayerEvent(3, On_LogIn)
+
+--[[CULL CHARACTERS -- UNFINISHED/BROKEN
+function CullCharacters()
+	local existing_chars		= CharDBQuery("SELECT guid FROM characters ORDER BY guid")
+	local registered_chars		= CharDBQuery("SELECT playerguid FROM shard_aa_points ORDER BY playerguid")
+	local chardb_guids			= {}
+	local registered_guids		= {}
+	local valid_guids			= {}
+	local invalid_guids			= {}
+	local querystrtable			= {}
+	print(registered_chars:GetUInt32(0))
+	repeat
+		table.insert(chardb_guids, existing_chars:GetUInt32(0))
+	until not existing_chars:NextRow()
+	repeat
+		table.insert(registered_guids, registered_chars:GetUInt32(0))
+	until not registered_chars:NextRow()
+	local ticker1 = 0
+	repeat
+		ticker1 = ticker1+1
+		if (registered_guids[ticker1]~=nil) then
+			local valid = 0
+			for k, v in pairs(chardb_guids) do
+				if (registered_guids[ticker1]==v) and (valid==0) then
+					table.insert(valid_guids, v)
+					valid = 1
+				end
+			end
+			if (valid==0) then
+				if (ticker1==1) then
+					table.insert(querystrtable, "DELETE FROM shard_aa_points WHERE playerguid="..registered_guids[ticker1])
+					table.insert(querystrtable, "DELETE FROM shard_aa_allocation WHERE playerguid="..registered_guids[ticker1])
+					table.insert(querystrtable, "DELETE FROM shard_aa_allocation WHERE playerguid="..registered_guids[ticker1])
+				else
+					table.insert(invalid_guids, )
+			end
+		end
+	until (registered_guids[ticker1]==nil)
+	for k, v in pairs(invalid_guids) do
+		print(v)
+	end
+end]]
+
+--[[APPLY MANA REGEN FROM SPIRIT]]
+local function manaregen (event, player)
+	if (player:GetStat(4)>1) then
+		spirit = player:GetStat(4)
+		repeat
+			player:AddAura(21359, player)
+			spirit = (spirit-2)
+		until (spirit<=1)
+	end
+end
+RegisterPlayerEvent(29, manaregen)
+RegisterPlayerEvent(13, manaregen)
+RegisterPlayerEvent(3, manaregen)
+
+--[[COMMANDS]]
+function ShardCommands(event, player, msg, Type, lang)				--Reloads shard_spell_table
+	if (player:GetGMRank()==3) then
+		if (msg==ReloadSpellsCommand) then
+			CacheSpells()
+			return false
+		end
+		--[[if (msg==CullCharactersCommand) then
+			CullCharacters()
+			return false
+		end]]
+	end
+end
+RegisterPlayerEvent(18, ShardCommands)

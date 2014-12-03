@@ -50,6 +50,7 @@
 	Frozen Solid	- 47591
 	Sleep			- 31292
 	Charm			- 6358
+	Blind			- 43433
 ]]--
 spell_table = {}
 function CacheSpells()		--Pulls the data from the SQL tables and caches it
@@ -107,12 +108,13 @@ function On_SpellCast (event, player, spell)
 		local ExDuration2	= spell_table[spellEntry][17]
 		local ExDuration3	= spell_table[spellEntry][18]
 
+		local cd = (BaseCooldown-(player:GetSkillValue(SkillID)*CooldownMult))*SpellCooldownMult
+
 	--TYPE 1, DAMAGE
 		if (Type==1) then
 			local mindmg = Data1+(player:GetSkillValue(SkillID)*(EffectMult*0.8))
 			local maxdmg = Data2+(player:GetSkillValue(SkillID)*(EffectMult*1.2))
 			local dmg = math.random(mindmg, maxdmg)
-			local cd = BaseCooldown-(player:GetSkillValue(SkillID)*CooldownMult)
 
 			SendDamage(player, target, SpellID, dmg, Data3)
 			SendCooldown(player, SpellID, cd)
@@ -123,7 +125,6 @@ function On_SpellCast (event, player, spell)
 			local maxdmg = Data2+(player:GetSkillValue(SkillID)*(EffectMult*1.2))
 			local dmg = math.random(mindmg, maxdmg)
 			local aura = player:GetAura(SpellID)
-			local cd = BaseCooldown-(player:GetSkillValue(SkillID)*CooldownMult)
 
 			SendAura(player, target, SpellID, Data4)
 
@@ -147,7 +148,6 @@ function On_SpellCast (event, player, spell)
 			local minamt = Data1+(player:GetSkillValue(SkillID)*(EffectMult*0.8))
 			local maxamt = Data2+(player:GetSkillValue(SkillID)*(EffectMult*1.2))
 			local amt = math.random(minamt, maxamt)
-			local cd = BaseCooldown-(player:GetSkillValue(SkillID)*CooldownMult)
 
 			SendHeal(player, target, SpellID, amt)
 			SendCooldown(player, SpellID, cd)
@@ -158,7 +158,6 @@ function On_SpellCast (event, player, spell)
 			local maxamt = Data2+(player:GetSkillValue(SkillID)*(EffectMult*1.2))
 			local amt = math.random(minamt, maxamt)
 			local aura = player:GetAura(SpellID)
-			local cd = BaseCooldown-(player:GetSkillValue(SkillID)*CooldownMult)
 
 			SendAura(player, target, SpellID, Data4)
 
