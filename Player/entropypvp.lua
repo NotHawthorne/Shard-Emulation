@@ -226,6 +226,7 @@ local function Init_FullLootFrame(event, player, object)
 	local item_ticker1 = 0
 	for k, v in pairs(item_table[object:GetGUIDLow()]) do
 		item_ticker1 = item_ticker1+1
+<<<<<<< HEAD
 		if (remove_table[object:GetGUIDLow()[item_ticker1]]==false) then
 			local FullLoot_Button = FullLoot_ButtonTable[item_ticker1]
 			local FullLoot_Text = FullLoot_TextTable[item_ticker1]
@@ -260,6 +261,37 @@ local function Init_FullLootFrame(event, player, object)
 				FullLoot_Text:Show()
 			else
 				player:SendBroadcastMessage("Ran out of available button slots.")
+=======
+		local FullLoot_Button = FullLoot_ButtonTable[item_ticker1]
+		local FullLoot_Text = FullLoot_TextTable[item_ticker1]
+		if (FullLoot_Button~=nil) then
+			FullLoot_Button:SetSize(200, 13)
+			FullLoot_Button:SetPoint("TOPLEFT", 25, (-10-(item_ticker1*15)))
+			FullLoot_Button:SetEnabledMouse(true)
+			FullLoot_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+			FullLoot_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")        
+			local FullLoot_Button_Tooltip_OnEnter = 'GameTooltip:SetOwner(select(1, ...), "ANCHOR_RIGHT") GameTooltip:SetHyperlink("item:'..v[2]..':0:0:0:0:0:0:0") GameTooltip:Show()'
+			FullLoot_Button:SetScript("OnEnter", AIO:ToFunction(FullLoot_Button_Tooltip_OnEnter))
+			local FullLoot_Button_Tooltip_OnLeave = [[
+				GameTooltip:Hide()
+			]]
+			FullLoot_Button:SetScript("OnLeave", AIO:ToFunction(FullLoot_Button_Tooltip_OnLeave))
+			FullLoot_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+			FullLoot_Text:SetSize(200, 5)
+			FullLoot_Text:SetPoint("CENTER", 0, 0)
+			FullLoot_Text:SetText(""..v[1].." x"..v[3])
+			FullLoot_Text:SetJustifyH("LEFT")
+			local function AddItem(player)
+				FullLootFrame:Clear()
+				FullLoot_Button:Hide()
+				FullLoot_Text:SetText("|cff9d9d9dLooted Item|r")
+				player:SendBroadcastMessage("You got a "..v[1])
+				player:AddItem(v[2], v[3])
+				v = nil
+				table.remove(item_table[""..object:GetGUIDLow()], item_ticker1)
+				table.remove(item_table[""..object:GetGUIDLow()], k)
+				FullLootFrame:Send(player)
+>>>>>>> origin/master
 			end
 		else
 			player:SendBroadcastMessage("Detected an item that has already been looted.")
