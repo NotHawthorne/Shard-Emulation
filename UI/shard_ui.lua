@@ -11,6 +11,7 @@ require("AIO")
      
 --Global vars
 pointgain = 6    --Stat points gained per level
+
     --[[STATIC SIDEBAR]]--
         local Frame = AIO:CreateFrame("Frame", "FrameTest", "UIParent", nil)
         Frame:SetSize(42, 179)
@@ -57,6 +58,21 @@ pointgain = 6    --Stat points gained per level
             insets = { left = 5, right = 5, top = 5, bottom = 5 }
         })
         StatFrame:Hide()
+		
+        local PvPFrame = AIO:CreateFrame("Frame", "PvPFrame", "UIParent", nil)
+        PvPFrame:SetSize(300, 400)
+        PvPFrame:SetMovable(true)
+        PvPFrame:SetEnabledMouse(true)
+        PvPFrame:RegisterForDrag("LeftButton")
+        PvPFrame:SetPoint("CENTER")
+        PvPFrame:SetClampedToScreen(true)
+        PvPFrame:SetBackdrop({
+            bgFile = "Interface/FrameGeneral/UI-Background-Rock",        --Doesnt exist in mpqs by default. Custom patch.
+            edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+            edgeSize = 20,
+            insets = { left = 5, right = 5, top = 5, bottom = 5 }
+        })
+        PvPFrame:Hide()
      
         local TrainingButton = AIO:CreateFrame("Button", "TrainingButton", Frame)
         TrainingButton:SetSize(32, 32)
@@ -65,7 +81,7 @@ pointgain = 6    --Stat points gained per level
         TrainingButton:SetNormalTexture("Interface/ICONS/INV_Misc_Book_11")
         TrainingButton:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
         TrainingButton:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
-        TrainingButton:SetScript("OnMouseUp", AIO:ToFunction("TrainingFrame:Show() StatFrame:Hide()"))
+        TrainingButton:SetScript("OnMouseUp", AIO:ToFunction("TrainingFrame:Show() StatFrame:Hide() PvPFrame:Hide()"))
         local TrainingsButton_Tooltip_OnEnter = [[
             GameTooltip:SetOwner(select(1, ...), "ANCHOR_RIGHT")
             GameTooltip:SetText("|cffFFFFFFCharacter Advancement|r\nLearn new skills, or allocate skill points\nto improve existing ones.")
@@ -84,7 +100,7 @@ pointgain = 6    --Stat points gained per level
         StatAllocationButton:SetNormalTexture("Interface/ICONS/Ability_Warrior_StrengthOfArms")
         StatAllocationButton:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
         StatAllocationButton:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
-        StatAllocationButton:SetScript("OnMouseUp", AIO:ToFunction("StatFrame:Show() TrainingFrame:Hide()"))
+        StatAllocationButton:SetScript("OnMouseUp", AIO:ToFunction("StatFrame:Show() TrainingFrame:Hide() PvPFrame:Hide()"))
         local StatAllocationButton_Tooltip_OnEnter = [[
             GameTooltip:SetOwner(select(1, ...), "ANCHOR_RIGHT")
             GameTooltip:SetText("|cffFFFFFFStat Allocation|r\nManage allocation of your attribute\npoints.")
@@ -122,9 +138,10 @@ pointgain = 6    --Stat points gained per level
         PvPButton:SetNormalTexture("Interface/ICONS/Achievement_Dungeon_Outland_Dungeon_Hero")
         PvPButton:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square")
         PvPButton:SetPushedTexture("Interface/Buttons/CheckButtonHilight")
+        PvPButton:SetScript("OnMouseUp", AIO:ToFunction("PvPFrame:Show() StatFrame:Hide() TrainingFrame:Hide()"))
         local PvPButton_Tooltip_OnEnter = [[
             GameTooltip:SetOwner(select(1, ...), "ANCHOR_RIGHT")
-            GameTooltip:SetText("|cffFFFFFFPvP Statistics|r\n'Soon'\n      -Blizzard Entertainment")
+            GameTooltip:SetText("|cffFFFFFFPvP Statistics|r\nView your PvP stats, and other\nworld PvP information.")
             GameTooltip:Show()
         ]]
         PvPButton:SetScript("OnEnter", AIO:ToFunction(PvPButton_Tooltip_OnEnter))
@@ -283,12 +300,10 @@ pointgain = 6    --Stat points gained per level
         Current_Info1:SetSize(100, 24)
         Current_Info1:SetPoint("TOPLEFT", 0, 0)
         Current_Info1:SetFont("Fonts\\FRIZQT__.TTF", 9)
-        Current_Info1:SetText("Current Skill Level: ")
         local Current_Info2 = TrainingFrame_PlayerInfoPanel:CreateFontString("Current_Info2")
         Current_Info2:SetSize(110, 24)
-        Current_Info2:SetPoint("BOTTOMLEFT", 0, 0)
+        Current_Info2:SetPoint("BOTTOMLEFT", 5, 0)
         Current_Info2:SetFont("Fonts\\FRIZQT__.TTF", 9)
-        Current_Info2:SetText("Available Skill Points: ")
         Current_Info1:Hide()
         Current_Info2:Hide()
 		
@@ -500,6 +515,16 @@ pointgain = 6    --Stat points gained per level
         Beastmastery_Button:SetScript("OnMouseUp", AIO:ToFunction(""..HideAll..""))
         WeaponMastery_Button:SetScript("OnMouseUp", AIO:ToFunction(""..HideAll..""))
         Shamanism_Button:SetScript("OnMouseUp", AIO:ToFunction(""..HideAll..""))
+	
+        function init_allocation(player)
+            TrainingFrame:Clear()
+            local pointquery = CharDBQuery("SELECT points FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
+			Current_Info1:SetText("Current Skill Level: ")
+            Current_Info2:SetText("Available Skill Points: "..pointquery:GetUInt32(0))
+			Current_Info1:Show()
+			Current_Info2:Show()
+            TrainingFrame:Send(player)
+        end
      
     --[[STAT ALLOCATION UI]]--
         local StatFrame_CloseButton = AIO:CreateFrame("Button", "StatFrame_CloseButton", StatFrame, "UIPanelCloseButton")
@@ -615,7 +640,7 @@ pointgain = 6    --Stat points gained per level
 		local statpoints
      
         function init_stats(player)
-            StatFrame:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
+            StatFrame:Clear()
             stats = {}
             statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
             statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
@@ -631,10 +656,8 @@ pointgain = 6    --Stat points gained per level
             Inte_Value:SetText(""..stats["inte"])
             Spi_Value:SetText(""..stats["spi"])
             Stat_Value:SetText(""..statpoints)
-            StatFrame:Send(player) -- this sends the changes and clears the msgs
+            StatFrame:Send(player)
         end
-       
-	   
 	   
         --Allocation Scripts
         function inc_strength(player)
@@ -1021,10 +1044,47 @@ pointgain = 6    --Stat points gained per level
         Dec_Spi:SetHighlightTexture("Interface/BUTTONS/UI-Panel-MinimizeButton-Highlight")
         Dec_Spi:SetPushedTexture("Interface/BUTTONS/UI-SpellbookIcon-PrevPage-Down")
         Dec_Spi:SetScript("OnMouseUp", dec_spirit)
-     
+		
+	--[[PVP FRAME]]
+		local PvPFrame_CloseButton = AIO:CreateFrame("Button", "PvPFrame_CloseButton", PvPFrame, "UIPanelCloseButton")
+        PvPFrame_CloseButton:SetPoint("TOPRIGHT", -5, -5)
+        PvPFrame_CloseButton:SetEnabledMouse(true)
+        PvPFrame_CloseButton:SetSize(27, 27)
+		
+		local PvPFrame_TitleBar = AIO:CreateFrame("Frame", "PvPFrame_TitleBar", PvPFrame, nil)
+        PvPFrame_TitleBar:SetSize(135, 25)
+        PvPFrame_TitleBar:SetBackdrop({
+            bgFile = "Interface/CHARACTERFRAME/UI-Party-Background",
+            edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+            tile = true,
+            edgeSize = 16,
+            tileSize = 16,
+            insets = { left = 5, right = 5, top = 5, bottom = 5 }
+        })
+        PvPFrame_TitleBar:SetPoint("TOP", 0, 9)
+        local PvPFrame_TitleText = PvPFrame_TitleBar:CreateFontString("PvPFrame_TitleText")
+        PvPFrame_TitleText:SetFont("Fonts\\FRIZQT__.TTF", 13)
+        PvPFrame_TitleText:SetSize(190, 5)
+        PvPFrame_TitleText:SetPoint("CENTER", 0, 0)
+        PvPFrame_TitleText:SetText("|cffFFC125PvP Statistics|r")
+       
+        local PvPFrame_Panel = AIO:CreateFrame("Frame", "PvPFrame_Panel", PvPFrame, nil)
+        PvPFrame_Panel:SetSize(179, 110)
+        PvPFrame_Panel:SetPoint("LEFT", 10, 69.5)
+        PvPFrame_Panel:SetBackdrop({
+            bgFile = "Interface/DialogFrame/UI-DialogBox-Background-Dark",
+            edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+            tile = true,
+            edgeSize = 16,
+            tileSize = 16,
+            insets = { left = 5, right = 5, top = 5, bottom = 5 }
+        })
+
 AIO:AddInitMsg(Frame)
 AIO:AddInitMsg(TrainingFrame)
 AIO:AddInitMsg(StatFrame)
+AIO:AddInitMsg(PvPFrame)
 AIO:AddPostInitFunc(init_stats)
+AIO:AddPostInitFunc(init_allocation)
 	
 RegisterPlayerEvent(3, init_stats)

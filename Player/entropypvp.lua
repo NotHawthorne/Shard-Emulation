@@ -9,6 +9,7 @@ local playerdeath = true    --Enable inventory dropping on player death?
 
 guid_linking_table = {}
 item_table = {}
+remove_table = {}
 
 --DEFINE LOOT FRAME
 local FullLootFrame = AIO:CreateFrame("Frame", "FullLootFrame", "UIParent", nil)
@@ -122,14 +123,16 @@ local function Remove_FullLootContainer(event, delay, call, object)
 	object:Despawn(1)
 	object:RemoveFromWorld(false)
 	FullLootFrame:Hide()
-    guid_linking_table[""..object:GetGUIDLow()] = nil
-	item_table[""..object:GetGUIDLow()] = nil
+    guid_linking_table[object:GetGUIDLow()] = nil
+	item_table[object:GetGUIDLow()] = nil
 end
 
 local function EntropyPvP(event, pKiller, pKilled)
 	if (playerdeath==true) then
+		local killed_color = ClassColorCodes[pKilled:GetClass()]
+		local killer_color = ClassColorCodes[pKiller:GetClass()]
 		--Fetch PvP Stats
-		killerstats = CharDBQuery("SELECT honorable_kills,dishonorable_kills FROM shard_pvp_stats WHERE playerguid="..pKiller:GetGUIDLow().."")
+		local killerstats = CharDBQuery("SELECT honorable_kills,dishonorable_kills FROM shard_pvp_stats WHERE playerguid="..pKiller:GetGUIDLow().."")
 		--Fetch Guild Names
 		if (pKiller:GetGuildName()~=nil) then
 			killerguild_name = " of "..pKiller:GetGuildName()..""
@@ -142,77 +145,48 @@ local function EntropyPvP(event, pKiller, pKilled)
 			killedguild_name = ", a Lone Wolf"
 		end
 		
-		--Class color codes (Killed)
-		killed_color = 0
-		if (pKilled:GetClass()==1) then killed_color = "C79C6E"
-		elseif (pKilled:GetClass()==2) then killed_color = "F58CBA"
-		elseif (pKilled:GetClass()==3) then killed_color = "ABD473"
-		elseif (pKilled:GetClass()==4) then killed_color = "FFF569"
-		elseif (pKilled:GetClass()==5) then killed_color = "FFFFFF"
-		elseif (pKilled:GetClass()==6) then killed_color = "C41F3B"
-		elseif (pKilled:GetClass()==7) then killed_color = "0070DE"
-		elseif (pKilled:GetClass()==8) then killed_color = "69CCF0"
-		elseif (pKilled:GetClass()==9) then killed_color = "9482C9"
-		elseif (pKilled:GetClass()==11) then killed_color = "FF7D0A"
-		elseif (pKilled:GetClass()==12) then killed_color = "EB2FDE" end
-		
-		--Class color codes (Killer)
-		killer_color = 0
-		if (pKiller:GetClass()==1) then killer_color = "C79C6E"
-		elseif (pKiller:GetClass()==2) then killer_color = "F58CBA"
-		elseif (pKiller:GetClass()==3) then killer_color = "ABD473"
-		elseif (pKiller:GetClass()==4) then killer_color = "FFF569"
-		elseif (pKiller:GetClass()==5) then killer_color = "FFFFFF"
-		elseif (pKiller:GetClass()==6) then killer_color = "C41F3B"
-		elseif (pKiller:GetClass()==7) then killer_color = "0070DE"
-		elseif (pKiller:GetClass()==8) then killer_color = "69CCF0"
-		elseif (pKiller:GetClass()==9) then killer_color = "9482C9"
-		elseif (pKiller:GetClass()==11) then killer_color = "FF7D0A"
-		elseif (pKiller:GetClass()==12) then killer_color = "EB2FDE" end
-		
-	if ((pKiller:GetLevel()-pKilled:GetLevel())<=leveldiff) then
-		local pKilledGUID = pKilled:GetGUIDLow()
-		local pKillerGUID = pKiller:GetGUIDLow()
-		local x,y,z,o = pKilled:GetX(),pKilled:GetY(),pKilled:GetZ(),pKilled:GetO()
-		local ContainerID = 818001
-		local kill_message = math.random(1,6)
-		local FullLootContainer = pKiller:SummonGameObject(ContainerID, x, y, z, 2.5, 0)			--Spawn a Sack of Belongings
-		FullLootContainer:RegisterEvent(Remove_FullLootContainer, decaytime*1000, 0)				--Register the Remove/Despawn event to the Sack of Belongings
-		guid_linking_table[""..FullLootContainer:GetGUIDLow()] = pKilled:GetGUIDLow()
-		--Get Items
-		local bagslot = 255
-		local inven_ticker = 0
-		local item_ticker = 0
-		local maxitems = 25 --Equal to amount of buttons that I have declared.
-		item_table[""..FullLootContainer:GetGUIDLow()] = {}
-		repeat
-			inven_ticker = inven_ticker+1
-			local checkitem = pKilled:GetItemByPos(255, inven_ticker)
-			if (checkitem~=nil) and (checkitem:IsBag()==false) and (checkitem:GetEntry()~=6948) then
-				item_ticker = item_ticker+1
-				table.insert (item_table[""..FullLootContainer:GetGUIDLow()], {checkitem:GetItemLink(), checkitem:GetEntry(), pKilled:GetItemCount(checkitem:GetEntry()), pKilled:GetName()})
-				--pKilled:RemoveItem(checkitem:GetEntry(), pKilled:GetItemCount(checkitem:GetEntry()))
+		if ((pKiller:GetLevel()-pKilled:GetLevel())<=leveldiff) then
+			local pKilledGUID = pKilled:GetGUIDLow()
+			local pKillerGUID = pKiller:GetGUIDLow()
+			local x,y,z,o = pKilled:GetX(),pKilled:GetY(),pKilled:GetZ(),pKilled:GetO()
+			local ContainerID = 818001
+			local FullLootContainer = pKiller:SummonGameObject(ContainerID, x, y, z, 2.5, 0)			--Spawn a Sack of Belongings
+			FullLootContainer:RegisterEvent(Remove_FullLootContainer, decaytime*1000, 0)				--Register the Remove/Despawn event to the Sack of Belongings
+			guid_linking_table[FullLootContainer:GetGUIDLow()] = pKilled:GetGUIDLow()
+			--Get Items
+			local bagslot = 255
+			local inven_ticker = 0
+			local item_ticker = 0
+			local maxitems = 25 --Equal to amount of buttons that I have declared.
+			item_table[FullLootContainer:GetGUIDLow()] = {}
+			repeat
+				inven_ticker = inven_ticker+1
+				local checkitem = pKilled:GetItemByPos(255, inven_ticker)
+				if (checkitem~=nil) and (checkitem:IsBag()==false) and (checkitem:GetEntry()~=6948) then
+					item_ticker = item_ticker+1
+					table.insert (item_table[FullLootContainer:GetGUIDLow()], {checkitem:GetItemLink(), checkitem:GetEntry(), pKilled:GetItemCount(checkitem:GetEntry()), pKilled:GetName()})
+					table.insert (remove_table[FullLootContainer:GetGUIDLow()], {item_ticker, false})
+					--pKilled:RemoveItem(checkitem:GetEntry(), pKilled:GetItemCount(checkitem:GetEntry()))
+				end
+			until (inven_ticker>=38) or (item_ticker>=maxitems)
+			--Kill Announcer
+			local DeathAnnouncements = {
+				"[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", got rekt by |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name.."!",
+				"[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", got knocked in da gabba by |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name.."!",
+				"[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", had their behind superfluously carved by |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name.."!",
+				"[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", had their lease on life terminated by |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name.."!",
+				"[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", died of an iron overdose, courtesy of |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name..".",
+				"[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", wanted a piece of |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name..", but bit off a little more than they could chew!"
+			}
+			if (EnableDeathAnnouncer==true) then
+				local DeathAnnounce_Roll = math.random(1,6)
+				SendWorldMessage(DeathAnnounce_Roll)
 			end
-		until (inven_ticker>=38) or (item_ticker>=maxitems)
-		--Kill Announcer
-		if (kill_message==1) then
-			SendWorldMessage("[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", got rekt by |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name.."!")
-		elseif (kill_message==2) then
-			SendWorldMessage("[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", got knocked in da gabba by |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name.."!")
-		elseif (kill_message==3) then
-			SendWorldMessage("[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", had their behind superfluously carved by |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name.."!")
-		elseif (kill_message==4) then
-			SendWorldMessage("[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", had their lease on life terminated by |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name.."!")
-		elseif (kill_message==5) then
-			SendWorldMessage("[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", died of an iron overdose, courtesy of |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name..".")
-		elseif (kill_message==6) then
-			SendWorldMessage("[PvP]: |CFF"..killed_color..""..pKilled:GetName().."|r"..killedguild_name..", wanted a piece of |CFF"..killer_color..""..pKiller:GetName().."|r"..killerguild_name..", but bit off a little more than they could chew!")
+			CharDBExecute("UPDATE shard_pvp_stats SET honorable_kills="..(killerstats:GetUInt32(0)+1).." WHERE playerguid = "..pKiller:GetGUIDLow().."")
+		else
+			CharDBExecute("UPDATE shard_pvp_stats SET dishonorable_kills="..(killerstats:GetUInt32(1)+1).." WHERE playerguid = "..pKiller:GetGUIDLow().."")
+			SendWorldMessage("[PvP]: |cffff0000Everyone give a big round of applause to|r |CFF"..killer_color..""..pKiller:GetName().."|r |cffff0000"..killerguild_name..", whom is level "..pKiller:GetLevel()..", killed|r |CFF"..killed_color..""..pKilled:GetName().."|r|cffff0000, a level "..pKilled:GetLevel()..".|r")
 		end
-		CharDBExecute("UPDATE shard_pvp_stats SET honorable_kills="..(killerstats:GetUInt32(0)+1).." WHERE playerguid = "..pKiller:GetGUIDLow().."")
-	else
-		CharDBExecute("UPDATE shard_pvp_stats SET dishonorable_kills="..(killerstats:GetUInt32(1)+1).." WHERE playerguid = "..pKiller:GetGUIDLow().."")
-		SendWorldMessage("[PvP]: |cffff0000Everyone give a big round of applause to|r |CFF"..killer_color..""..pKiller:GetName().."|r |cffff0000"..killerguild_name..", whom is level "..pKiller:GetLevel()..", killed|r |CFF"..killed_color..""..pKilled:GetName().."|r|cffff0000, a level "..pKilled:GetLevel()..".|r")
-	end
 	end
 end
 
@@ -224,19 +198,19 @@ local function CreatureDeath (event, pKiller, pKilled)
 	local kill_message = math.random(1,6)
 	local FullLootContainer = pKiller:SummonGameObject(ContainerID, x, y, z, 2.5, 0)			--Spawn a Sack of Belongings
 	FullLootContainer:RegisterEvent(Remove_FullLootContainer, decaytime*1000, 0)				--Register the Remove/Despawn event to the Sack of Belongings
-	guid_linking_table[""..FullLootContainer:GetGUIDLow()] = pKilled:GetGUIDLow()
+	guid_linking_table[FullLootContainer:GetGUIDLow()] = pKilled:GetGUIDLow()
 	--Get Items
 	local bagslot = 255
 	local inven_ticker = 0
 	local item_ticker = 0
 	local maxitems = 25 --Equal to amount of buttons that I have declared.
-	item_table[""..FullLootContainer:GetGUIDLow()] = {}
+	item_table[FullLootContainer:GetGUIDLow()] = {}
 	repeat
 		inven_ticker = inven_ticker+1
 		local checkitem = pKilled:GetItemByPos(255, inven_ticker)
 		if (checkitem~=nil) and (checkitem:IsBag()==false) and (checkitem:GetEntry()~=6948) then
 			item_ticker = item_ticker+1
-			table.insert (item_table[""..FullLootContainer:GetGUIDLow()], {checkitem:GetItemLink(), checkitem:GetEntry(), pKilled:GetItemCount(checkitem:GetEntry()), pKilled:GetName()})
+			table.insert (item_table[FullLootContainer:GetGUIDLow()], {checkitem:GetItemLink(), checkitem:GetEntry(), pKilled:GetItemCount(checkitem:GetEntry()), pKilled:GetName()})
 			--pKilled:RemoveItem(checkitem:GetEntry(), pKilled:GetItemCount(checkitem:GetEntry()))
 		end
 	until (inven_ticker>=38) or (item_ticker>=maxitems)
@@ -250,40 +224,45 @@ end
 local function Init_FullLootFrame(event, player, object)
 	FullLootFrame:Clear()
 	local item_ticker1 = 0
-	for k, v in pairs(item_table[""..object:GetGUIDLow()]) do
+	for k, v in pairs(item_table[object:GetGUIDLow()]) do
 		item_ticker1 = item_ticker1+1
-		local FullLoot_Button = FullLoot_ButtonTable[item_ticker1]
-		local FullLoot_Text = FullLoot_TextTable[item_ticker1]
-		if (FullLoot_Button~=nil) then
-			FullLoot_Button:SetSize(200, 13)
-			FullLoot_Button:SetPoint("TOPLEFT", 25, (-10-(item_ticker1*15)))
-			FullLoot_Button:SetEnabledMouse(true)
-			FullLoot_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
-			FullLoot_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")        
-			local FullLoot_Button_Tooltip_OnEnter = 'GameTooltip:SetOwner(select(1, ...), "ANCHOR_RIGHT") GameTooltip:SetHyperlink("item:'..v[2]..':0:0:0:0:0:0:0") GameTooltip:Show()'
-			FullLoot_Button:SetScript("OnEnter", AIO:ToFunction(FullLoot_Button_Tooltip_OnEnter))
-			local FullLoot_Button_Tooltip_OnLeave = [[
-				GameTooltip:Hide()
-			]]
-			FullLoot_Button:SetScript("OnLeave", AIO:ToFunction(FullLoot_Button_Tooltip_OnLeave))
-			FullLoot_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
-			FullLoot_Text:SetSize(200, 5)
-			FullLoot_Text:SetPoint("CENTER", 0, 0)
-			FullLoot_Text:SetText(""..v[1].." x"..v[3])
-			FullLoot_Text:SetJustifyH("LEFT")
-			local function AddItem(player)
-				FullLootFrame:Clear()
-				FullLoot_Button:Hide()
-				FullLoot_Text:SetText("|cff9d9d9dLooted Item|r")
-				player:SendBroadcastMessage("You got a "..v[1])
-				player:AddItem(v[2], v[3])
-				FullLootFrame:Send(player)
+		if (remove_table[object:GetGUIDLow()[item_ticker1]]==false) then
+			local FullLoot_Button = FullLoot_ButtonTable[item_ticker1]
+			local FullLoot_Text = FullLoot_TextTable[item_ticker1]
+			if (FullLoot_Button~=nil) then
+				FullLoot_Button:SetSize(200, 13)
+				FullLoot_Button:SetPoint("TOPLEFT", 25, (-10-(item_ticker1*15)))
+				FullLoot_Button:SetEnabledMouse(true)
+				FullLoot_Button:SetHighlightTexture("Interface/Buttons/UI-Listbox-Highlight")
+				FullLoot_Button:SetPushedTexture("Interface/Buttons/CheckButtonHilight")        
+				local FullLoot_Button_Tooltip_OnEnter = 'GameTooltip:SetOwner(select(1, ...), "ANCHOR_RIGHT") GameTooltip:SetHyperlink("item:'..v[2]..':0:0:0:0:0:0:0") GameTooltip:Show()'
+				FullLoot_Button:SetScript("OnEnter", AIO:ToFunction(FullLoot_Button_Tooltip_OnEnter))
+				local FullLoot_Button_Tooltip_OnLeave = [[
+					GameTooltip:Hide()
+				]]
+				FullLoot_Button:SetScript("OnLeave", AIO:ToFunction(FullLoot_Button_Tooltip_OnLeave))
+				FullLoot_Text:SetFont("Fonts\\FRIZQT__.TTF", 11)
+				FullLoot_Text:SetSize(200, 5)
+				FullLoot_Text:SetPoint("CENTER", 0, 0)
+				FullLoot_Text:SetText(""..v[1].." x"..v[3])
+				FullLoot_Text:SetJustifyH("LEFT")
+				local function AddItem(player)
+					FullLootFrame:Clear()
+					FullLoot_Button:Hide()
+					FullLoot_Text:SetText("|cff9d9d9dLooted Item|r")
+					player:SendBroadcastMessage("You got a "..v[1])
+					player:AddItem(v[2], v[3])
+					remove_table[object:GetGUIDLow()[item_ticker1]] = true
+					FullLootFrame:Send(player)
+				end
+				FullLoot_Button:SetScript("OnMouseUp", AddItem, AIO:ObjDo(""))
+				FullLoot_Button:Show()
+				FullLoot_Text:Show()
+			else
+				player:SendBroadcastMessage("Ran out of available button slots.")
 			end
-			FullLoot_Button:SetScript("OnMouseUp", AddItem, AIO:ObjDo(""))
-			FullLoot_Button:Show()
-			FullLoot_Text:Show()
 		else
-			player:SendBroadcastMessage("Ran out of available button slots.")
+			player:SendBroadcastMessage("Detected an item that has already been looted.")
 		end
 	end
 	if (item_ticker1<25) then
@@ -295,8 +274,8 @@ local function Init_FullLootFrame(event, player, object)
 			FullLoot_Text:Hide()
 		until (item_ticker1>=25)
 	end
-	if (guid_linking_table[""..object:GetGUIDLow()]~=nil) then
-		local owner = GetPlayerByGUID(guid_linking_table[""..object:GetGUIDLow()])
+	if (guid_linking_table[object:GetGUIDLow()]~=nil) then
+		local owner = GetPlayerByGUID(guid_linking_table[object:GetGUIDLow()])
 		FullLootFrame_TitleText:SetText("|cffFFC125"..owner:GetName().."'s Belongings|r")
 	else
 		FullLootFrame_TitleText:SetText("|cffFFC125Unclaimed Belongings|r")
@@ -313,56 +292,7 @@ local function Container_Interact(event, player, object)
 	return false
 end
 
-local function ShardPvPCommands(event, player, msg)
-	if (player:IsGM()) then
-		if (msg=="#shard playerdeath on") then
-			if (playerdeath==true) then
-				player:SendBroadcastMessage("Shard PvP already active.")
-				return false
-			else
-				player:SendBroadcastMessage("Shard PvP activated.")
-				playerdeath = true
-				return false
-			end
-		end
-		if (msg=="#shard playerdeath off") then
-			if (playerdeath==false) then
-				player:SendBroadcastMessage("Shard PvP already inactive.")
-				return false
-			else
-				player:SendBroadcastMessage("Shard PvP deactivated.")
-				playerdeath = false
-				return false
-			end
-		end
-		if (msg=="#shard creaturedeath on") then
-			if (creaturedeath==true) then
-				player:SendBroadcastMessage("Shard PvE already active.")
-				return false
-			else
-				player:SendBroadcastMessage("Shard PvE activated.")
-				creaturedeath = true
-				return false
-			end
-		end
-		if (msg=="#shard creaturedeath off") then
-			if (creaturedeath==false) then
-				player:SendBroadcastMessage("Shard PvE already inactive.")
-				return false
-			else
-				player:SendBroadcastMessage("Shard PvE deactivated.")
-				creaturedeath = false
-				return false
-			end
-		end
-	else
-		player:SendBroadcastMessage("You do not have access to this function.")
-		return false
-	end
-end
-
 AIO:AddInitMsg(FullLootFrame)
 RegisterPlayerEvent(6, EntropyPvP)										--Triggered when player dies to player
 RegisterPlayerEvent(8, CreatureDeath)								--Triggered when player dies to creature
 RegisterGameObjectGossipEvent(818001, 1, Container_Interact)
-RegisterPlayerEvent(18, ShardPvPCommands)
