@@ -13,3 +13,17 @@ function Shard_RecieveData(SentData, Identifier)
 		end
 	end
 end
+
+GameTooltip:HookScript("OnTooltipSetSpell", function(self)
+	if (GameTooltip:GetSpell()~=nil) then
+		local spellName, spellRank, spellID = GameTooltip:GetSpell()
+    	for k, v in pairs(Shard_SpellData) do
+    		if (spellID==v[1]) then
+    			if (type==1) then
+					GameTooltip:SetText(desc)
+				end
+			end
+    	end
+    end
+    self:Show()
+end)
