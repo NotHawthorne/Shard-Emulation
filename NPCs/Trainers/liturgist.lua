@@ -14,6 +14,7 @@ end
 function Gossip_Select(event, player, unit, sender, intid, code)
 	if (intid == 1) then --Learn
         player:SetSkill(789, 1, 99, 99)
+        player:SetSkill(790, 1, 99, 99)
     end
     if (intid == 2) then --Unlearn
         player:SetSkill(789, 0, 0, 0)

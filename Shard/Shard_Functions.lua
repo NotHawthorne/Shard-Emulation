@@ -17,6 +17,31 @@ function SendAura(player, target, spellID, duration)				--Sets the duration of t
 	end
 end
 
+--[[CACHE CUSTOM CLASSES]]
+shard_class_table = {}
+function CacheClasses()
+	if (CustomClasses==true) then
+		shard_class_table = {}
+		cached_classes = 0
+		CustomClassInfo = CharDBQuery("SELECT * FROM shard_class_info ORDER BY id")
+		repeat
+			local ClassID 		= CustomClassInfo:GetUInt32(0)
+			local Name	 		= CustomClassInfo:GetString(1)
+			local Skill1		= CustomClassInfo:GetUInt32(2)
+			local Skill2		= CustomClassInfo:GetUInt32(3)
+			local Req_Gender	= CustomClassInfo:GetUInt32(4)
+			shard_class_table[ClassID] = {ClassID, Name, Skill1, Skill2, Req_Gender}
+			cached_classes = cached_classes+1
+		until not CustomClassInfo:NextRow()
+		for _k, v in pairs(shard_class_table) do
+			print("[Shard]: Successfully loaded data for class '"..v[2].."'")
+		end
+	else
+		print("[Shard]: Custom classes disabled.")
+	end
+end
+CacheClasses()
+
 --[[AUTO ATTACK]]
 function auto_attack(event, player, spell)
 	if (spell:GetEntry()==7712) then
@@ -76,76 +101,74 @@ RegisterPlayerEvent(7, bonus_xp_system.initialize)
 function first_login (event, player)
 	CharDBExecute("INSERT INTO shard_aa_points (playerguid) VALUES ("..player:GetGUIDLow()..")")
 	CharDBExecute("INSERT INTO shard_stats (playerguid, str, agi, sta, inte, spi) VALUES (0, 0, 0, 0, 0)")
+	CharDBExecute("INSERT INTO shard_pvp_stats (playerguid) VALUES ("..player:GetGUIDLow()..")")
 end
 
 RegisterPlayerEvent(30, first_login)
 
+--[[STAT ALLOCATION]]
+stat_cache 			= {}
+statpoints_cache 	= {}
+
+function init_stats (event, player)
+
+	local statquery 						= CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
+	local statpointquery					= CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
+	stat_cache[player:GetGUIDLow()]			= {statquery:GetUInt32(0), statquery:GetUInt32(1), statquery:GetUInt32(2), statquery:GetUInt32(3), statquery:GetUInt32(4)}
+	statpoints_cache[player:GetGUIDLow()] 	= statpointquery:GetUInt32(0)
+
+	if (stat_cache[player:GetGUIDLow()][1]>0) then
+		player:AddAura(7464, player)
+		local aura = player:GetAura(7464)
+		aura:SetStackAmount(stat_cache[player:GetGUIDLow()][1])
+	end
+	if (stat_cache[player:GetGUIDLow()][2]>0) then
+		player:AddAura(7471, player)
+		local aura = player:GetAura(7471)
+		aura:SetStackAmount(stat_cache[player:GetGUIDLow()][2])
+	end
+	if (stat_cache[player:GetGUIDLow()][3]>0) then
+		player:AddAura(7477, player)
+		local aura = player:GetAura(7477)
+		aura:SetStackAmount(stat_cache[player:GetGUIDLow()][3])
+	end
+	if (stat_cache[player:GetGUIDLow()][4]>0) then
+		player:AddAura(7468, player)
+		local aura = player:GetAura(7468)
+		aura:SetStackAmount(stat_cache[player:GetGUIDLow()][4])
+	end
+	if (stat_cache[player:GetGUIDLow()][5]>0) then
+		player:AddAura(7474, player)
+		local aura = player:GetAura(7474)
+		aura:SetStackAmount(stat_cache[player:GetGUIDLow()][5])
+	end
+
+	player:SetSpeed(1, 0.8+(player:GetStat(1)*0.013))
+
+end
+
+RegisterPlayerEvent(3, init_stats)
+
 --[[ON LOGIN]]
 function On_LogIn (event, player)
-	local statdb = CharDBQuery("SELECT str, agi, sta, inte, spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-	local allocated_str = statdb:GetUInt32(0)
-	local allocated_agi = statdb:GetUInt32(1)
-	local allocated_sta = statdb:GetUInt32(2)
-	local allocated_inte = statdb:GetUInt32(3)
-	local allocated_spi = statdb:GetUInt32(4)
-
-	local ticker1 = 0
-	local ticker2 = 0
-	local ticker3 = 0
-	local ticker4 = 0
-	local ticker5 = 0
-	local ticker6 = 0
-
-	if (allocated_str>0) then
-		repeat
-			player:AddAura(7464, player)
-			ticker1 = ((ticker1)+1)
-		until (ticker1==allocated_str)
-	end
-	
-	if (allocated_agi>0) then
-		repeat
-			player:AddAura(7471, player)
-			ticker2 = ((ticker2)+1)
-		until (ticker2==allocated_agi)
-	end
-	
-	if (allocated_sta>0) then
-		repeat
-			player:AddAura(7477, player)
-			ticker3 = ((ticker3)+1)
-		until (ticker3==allocated_sta)
-	end
-	
-	if (allocated_inte>0) then
-		repeat
-			player:AddAura(7468, player)
-			ticker4 = ((ticker4)+1)
-		until (ticker4==allocated_sta)
-	end
-	
-	if (allocated_spi>0) then
-		repeat
-			player:AddAura(7474, player)
-			ticker5 = ((ticker5)+1)
-		until (ticker5==allocated_sta)
-	end
-	
-	speed = ((player:GetStat(1)/80))
-	
-	if (speed>0) then
-		ticker6=1
-		repeat
-			ticker6 = ((ticker6)+0.01)
-		until (ticker6>=speed)
-		player:SetSpeed(1, ticker6, true)
-	end
-	
 	player:AddAura(7711, player)			--Modded in the DBC files, this is the aura that makes auto attacks cost energy.
 
 	player:RemoveSpell(668, player)
 	player:LearnSpell(668, player)			--Language glitch band-aid.
 
+	local SecondaryClassQuery = CharDBQuery("SELECT class FROM shard_assigned_class WHERE playerguid="..player:GetGUIDLow())
+	if (CustomClasses==true) then
+		if (SecondaryClassQuery~=nil) then
+			print("[Shard]: Player '"..player:GetName().."' is assigned Secondary Class '"..shard_class_table[SecondaryClassQuery:GetUInt32(0)][2].."'")
+		else
+			if (player:GetLevel()>10) then
+				--Show Secondary Class Selection screen maybe?
+				print("[Shard]: Player '"..player:GetName().."' has no assigned Secondary Class and is above level 10. Issue grabbing data?")
+			else
+				print("[Shard]: Player '"..player:GetName().."' has no assigned Secondary Class.")
+			end
+		end
+	end
 end
 
 RegisterPlayerEvent(3, On_LogIn)
@@ -206,17 +229,39 @@ RegisterPlayerEvent(29, manaregen)
 RegisterPlayerEvent(13, manaregen)
 RegisterPlayerEvent(3, manaregen)
 
+--[[ON LEVELUP]]
+function On_LevelUp (event, player, oldLevel)
+	if (oldLevel>player:GetLevel()) then
+		if ((statpoints_cache[player:GetGUIDLow()]-((oldLevel-player:GetLevel())*StatPointsPerLevel))<0) then
+			statpoints_cache[player:GetGUIDLow()] = 0
+			CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow())
+			player:SendBroadcastMessage("Stat points set to 0.")
+		else
+			statpoints_cache[player:GetGUIDLow()] = statpoints_cache[player:GetGUIDLow()]-((oldLevel-player:GetLevel())*StatPointsPerLevel)
+			CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow())
+			player:SendBroadcastMessage("You've lost "..(oldLevel-player:GetLevel())*StatPointsPerLevel.." stat points. You now have "..statpoints_cache[player:GetGUIDLow()].." unallocated stat points.")
+		end
+	else
+	    statpoints_cache[player:GetGUIDLow()] = statpoints_cache[player:GetGUIDLow()]+((player:GetLevel()-oldLevel)*StatPointsPerLevel)
+	    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow())
+	    player:SendBroadcastMessage("You've gained "..(player:GetLevel()-oldLevel)*StatPointsPerLevel.." stat points! You now have "..statpoints_cache[player:GetGUIDLow()].." unallocated stat points.")
+	end
+	init_statvalues(player)
+end
+
+RegisterPlayerEvent(13, On_LevelUp)
+
 --[[COMMANDS]]
-function ShardCommands(event, player, msg, Type, lang)				--Reloads shard_spell_table
+function ShardCommands(event, player, msg, Type, lang)
 	if (player:GetGMRank()==3) then
 		if (msg==ReloadSpellsCommand) then
 			CacheSpells()
 			return false
 		end
-		--[[if (msg==CullCharactersCommand) then
-			CullCharacters()
+		if (msg==SyncStatsCommand) then
+			sync_stats(event, player)
 			return false
-		end]]
+		end
 	end
 end
 RegisterPlayerEvent(18, ShardCommands)

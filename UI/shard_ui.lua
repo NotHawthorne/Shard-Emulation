@@ -633,29 +633,16 @@ pointgain = 6    --Stat points gained per level
         Stat_Value:SetFont("Fonts\\FRIZQT__.TTF", 11)
         Stat_Value:SetSize(50, 5)
         Stat_Value:SetPoint("BOTTOMRIGHT", 115, -8.5)
-		
-		local stats
-		local statquery
-		local statpointquery
-		local statpoints
      
-        function init_stats(player)
+        function init_statvalues(player)
             StatFrame:Clear()
-            stats = {}
-            statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-            statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-            stats["str"]    = statquery:GetUInt32(0)
-            stats["agi"]    = statquery:GetUInt32(1)
-            stats["sta"]    = statquery:GetUInt32(2)
-            stats["inte"]   = statquery:GetUInt32(3)
-            stats["spi"]    = statquery:GetUInt32(4)
-            statpoints = statpointquery:GetUInt32(0)
-            Str_Value:SetText(""..stats["str"])
-            Sta_Value:SetText(""..stats["sta"])
-            Agi_Value:SetText(""..stats["agi"])
-            Inte_Value:SetText(""..stats["inte"])
-            Spi_Value:SetText(""..stats["spi"])
-            Stat_Value:SetText(""..statpoints)
+            Str_Value:SetText(""..stat_cache[player:GetGUIDLow()][1])
+            Sta_Value:SetText(""..stat_cache[player:GetGUIDLow()][2])
+            Agi_Value:SetText(""..stat_cache[player:GetGUIDLow()][3])
+            Inte_Value:SetText(""..stat_cache[player:GetGUIDLow()][4])
+            Spi_Value:SetText(""..stat_cache[player:GetGUIDLow()][5])
+            Stat_Value:SetText(""..statpoints_cache[player:GetGUIDLow()])
+            print("[Shard]: Initialized stat allocation for player '"..player:GetName().."'")
             StatFrame:Send(player)
         end
 	   
@@ -664,24 +651,21 @@ pointgain = 6    --Stat points gained per level
 			if player:IsInCombat() then
 				player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
 			else
-				statquery      = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-				statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-				stats["str"]   = statquery:GetUInt32(0)
-				statpointvalue = statpointquery:GetUInt32(0)
-				if (statpointvalue<0) then
+				if (statpoints_cache[player:GetGUIDLow()]<=0) then
 					player:SendBroadcastMessage("You don't have enough stat points!")
 				else
-					StatNames:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
-					stats["str"] = stats["str"]+1
-					Str_Value:SetText(""..stats["str"])
-					Stat_Value:SetText(""..(statpointvalue-1))
-					CharDBExecute("UPDATE shard_stats SET str="..stats["str"].." WHERE playerguid="..player:GetGUIDLow())
-					statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-					stats["str"] = statquery:GetUInt32(0)
-					StatFrame:Send(player) -- this sends the changes and clears the msgs
-					player:SendBroadcastMessage("You've increased your strength to "..(stats["str"]+1).."!")
-					player:AddAura(7464, player)
-					CharDBExecute("UPDATE shard_aa_points SET statpoints="..(statpointvalue-1).." WHERE playerguid="..player:GetGUIDLow().."")
+                    stat_cache[player:GetGUIDLow()][1]      = stat_cache[player:GetGUIDLow()][1]+1
+                    statpoints_cache[player:GetGUIDLow()]   = statpoints_cache[player:GetGUIDLow()]-1
+                    CharDBExecute("UPDATE shard_stats SET str="..(stat_cache[player:GetGUIDLow()][1]).." WHERE playerguid="..player:GetGUIDLow())
+                    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow().."")
+					player:SendBroadcastMessage("You've increased your strength to "..stat_cache[player:GetGUIDLow()][1].."!")
+                    local aura = player:GetAura(7464)
+                    if (aura) then
+                        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][1])
+                    else
+                        player:AddAura(7464, player)
+                    end
+                    init_statvalues(player)
 				end
             end
         end
@@ -690,268 +674,199 @@ pointgain = 6    --Stat points gained per level
 			if player:IsInCombat() then
 				player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
 			else
-            statquery      = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-            statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-            stats["str"]   = statquery:GetUInt32(0)
-			if (stats["str"]==0) then
-				player:SendBroadcastMessage("This stat is at its minimum value.")
-			else
-			statpointvalue = statpointquery:GetUInt32(0)
-            StatNames:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
-			local newstr = statquery:GetUInt32(0)-1
-            Str_Value:SetText(""..newstr)
-			Stat_Value:SetText(""..(statpointvalue+1))
-			CharDBExecute("UPDATE shard_stats SET str="..newstr.." WHERE playerguid="..player:GetGUIDLow())
-            StatFrame:Send(player) -- this sends the changes and clears the msgs
-			player:RemoveAura(7464, player)
-            player:SendBroadcastMessage("You've decreased your strength to "..newstr.."!")
-			ticker = 0
-			if (newstr>=1) then
-				repeat
-					player:AddAura(7464, player)
-					ticker = ((ticker)+1)
-				until (ticker==newstr)
-			end
-			CharDBExecute("UPDATE shard_aa_points SET statpoints="..(statpointvalue+1).." WHERE playerguid="..player:GetGUIDLow().."")
-			end
+    			if (stat_cache[player:GetGUIDLow()][1]==0) then
+    				player:SendBroadcastMessage("This stat is at its minimum value.")
+    			else
+                    stat_cache[player:GetGUIDLow()][1]      = stat_cache[player:GetGUIDLow()][1]-1
+                    statpoints_cache[player:GetGUIDLow()]   = statpoints_cache[player:GetGUIDLow()]+1
+                    CharDBExecute("UPDATE shard_stats SET str="..(stat_cache[player:GetGUIDLow()][1]).." WHERE playerguid="..player:GetGUIDLow())
+                    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow().."")
+                    player:SendBroadcastMessage("You've decreased your strength to "..stat_cache[player:GetGUIDLow()][1].."!")
+        			local aura = player:GetAura(7464)
+                    if (aura) then
+                        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][1])
+                    end
+                    init_statvalues(player)
+    			end
 			end
         end
-		
+
         function inc_stamina(player)
-			if player:IsInCombat() then
-				player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
-			else
-            statquery      = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-            statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-            stats["sta"]   = statquery:GetUInt32(2)
-			statpointvalue = statpointquery:GetUInt32(0)
-            if (statpointvalue<0) then
-                player:SendBroadcastMessage("You don't have enough stat points!")
+            if player:IsInCombat() then
+                player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
             else
-                StatNames:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
-                stats["sta"] = stats["sta"]+1
-                Sta_Value:SetText(""..stats["sta"])
-				Stat_Value:SetText(""..(statpointvalue-1))
-				CharDBExecute("UPDATE shard_stats SET sta="..stats["sta"].." WHERE playerguid="..player:GetGUIDLow())
-                statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-				stats["sta"] = statquery:GetUInt32(2)
-                StatFrame:Send(player) -- this sends the changes and clears the msgs
-                player:SendBroadcastMessage("You've increased your stamina to "..(stats["sta"]+1).."!")
-				player:AddAura(7477, player)
-				CharDBExecute("UPDATE shard_aa_points SET statpoints="..(statpointvalue-1).." WHERE playerguid="..player:GetGUIDLow().."")
-			end
+                if (statpoints_cache[player:GetGUIDLow()]<=0) then
+                    player:SendBroadcastMessage("You don't have enough stat points!")
+                else
+                    stat_cache[player:GetGUIDLow()][2]      = stat_cache[player:GetGUIDLow()][2]+1
+                    statpoints_cache[player:GetGUIDLow()]   = statpoints_cache[player:GetGUIDLow()]-1
+                    CharDBExecute("UPDATE shard_stats SET sta="..(stat_cache[player:GetGUIDLow()][2]).." WHERE playerguid="..player:GetGUIDLow())
+                    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow().."")
+                    player:SendBroadcastMessage("You've increased your stamina to "..stat_cache[player:GetGUIDLow()][2].."!")
+                    local aura = player:GetAura(7477)
+                    if (aura) then
+                        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][2])
+                    else
+                        player:AddAura(7477, player)
+                    end
+                    init_statvalues(player)
+                end
             end
         end
 		
         function dec_stamina(player)
-			if player:IsInCombat() then
-				player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
-			else
-            statquery      = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-            statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-            stats["sta"]   = statquery:GetUInt32(2)
-			if (stats["sta"]==0) then
-				player:SendBroadcastMessage("This stat is at its minimum value.")
-			else
-			statpointvalue = statpointquery:GetUInt32(0)
-            StatNames:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
-			local newsta = statquery:GetUInt32(2)-1
-            Sta_Value:SetText(""..newsta)
-			Stat_Value:SetText(""..(statpointvalue+1))
-			CharDBExecute("UPDATE shard_stats SET sta="..newsta.." WHERE playerguid="..player:GetGUIDLow())
-            StatFrame:Send(player) -- this sends the changes and clears the msgs
-			player:RemoveAura(7477, player)
-            player:SendBroadcastMessage("You've decreased your strength to "..newsta.."!")
-			ticker = 0
-			if (newsta>=1) then
-				repeat
-					player:AddAura(7477, player)
-					ticker = ((ticker)+1)
-				until (ticker==newsta)
-			end
-			CharDBExecute("UPDATE shard_aa_points SET statpoints="..(statpointvalue+1).." WHERE playerguid="..player:GetGUIDLow().."")
-			end
-			end
+            if player:IsInCombat() then
+                player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
+            else
+                if (stat_cache[player:GetGUIDLow()][2]==0) then
+                    player:SendBroadcastMessage("This stat is at its minimum value.")
+                else
+                    stat_cache[player:GetGUIDLow()][2]      = stat_cache[player:GetGUIDLow()][2]-1
+                    statpoints_cache[player:GetGUIDLow()]   = statpoints_cache[player:GetGUIDLow()]+1
+                    CharDBExecute("UPDATE shard_stats SET sta="..(stat_cache[player:GetGUIDLow()][2]).." WHERE playerguid="..player:GetGUIDLow())
+                    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow().."")
+                    player:SendBroadcastMessage("You've decreased your stamina to "..stat_cache[player:GetGUIDLow()][2].."!")
+                    local aura = player:GetAura(7477)
+                    if (aura) then
+                        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][2])
+                    end
+                    init_statvalues(player)
+                end
+            end
         end
 		
         function inc_agility(player)
-			if player:IsInCombat() then
-				player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
-			else
-            statquery      = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-            statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-            stats["agi"]   = statquery:GetUInt32(1)
-			statpointvalue = statpointquery:GetUInt32(0)
-            if (statpointvalue<0) then
-                player:SendBroadcastMessage("You don't have enough stat points!")
+            if player:IsInCombat() then
+                player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
             else
-                StatNames:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
-                stats["agi"] = stats["agi"]+1
-                Agi_Value:SetText(""..stats["agi"])
-				Stat_Value:SetText(""..(statpointvalue-1))
-				CharDBExecute("UPDATE shard_stats SET agi="..stats["agi"].." WHERE playerguid="..player:GetGUIDLow())
-                statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-				stats["agi"] = statquery:GetUInt32(1)
-                StatFrame:Send(player) -- this sends the changes and clears the msgs
-                player:SendBroadcastMessage("You've increased your agility to "..(stats["agi"]+1).."!")
-				player:AddAura(7471, player)
-				CharDBExecute("UPDATE shard_aa_points SET statpoints="..(statpointvalue-1).." WHERE playerguid="..player:GetGUIDLow().."")
-			end
+                if (statpoints_cache[player:GetGUIDLow()]<=0) then
+                    player:SendBroadcastMessage("You don't have enough stat points!")
+                else
+                    stat_cache[player:GetGUIDLow()][3]      = stat_cache[player:GetGUIDLow()][3]+1
+                    statpoints_cache[player:GetGUIDLow()]   = statpoints_cache[player:GetGUIDLow()]-1
+                    CharDBExecute("UPDATE shard_stats SET agi="..(stat_cache[player:GetGUIDLow()][3]).." WHERE playerguid="..player:GetGUIDLow())
+                    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow().."")
+                    player:SendBroadcastMessage("You've increased your agility to "..stat_cache[player:GetGUIDLow()][3].."!")
+                    local aura = player:GetAura(7471)
+                    if (aura) then
+                        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][3])
+                    else
+                        player:AddAura(7471, player)
+                    end
+                    player:SetSpeed(1, 0.8+(player:GetStat(1)*0.013))
+                    init_statvalues(player)
+                end
             end
         end
 		
         function dec_agility(player)
-			if player:IsInCombat() then
-				player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
-			else
-            statquery      = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-            statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-            stats["agi"]   = statquery:GetUInt32(1)
-			if (stats["agi"]==0) then
-				player:SendBroadcastMessage("This stat is at its minimum value.")
-			else
-			statpointvalue = statpointquery:GetUInt32(0)
-            StatNames:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
-			local newagi = statquery:GetUInt32(1)-1
-            Agi_Value:SetText(""..newagi)
-			Stat_Value:SetText(""..(statpointvalue+1))
-			CharDBExecute("UPDATE shard_stats SET agi="..newagi.." WHERE playerguid="..player:GetGUIDLow())
-            StatFrame:Send(player) -- this sends the changes and clears the msgs
-			player:RemoveAura(7471, player)
-            player:SendBroadcastMessage("You've decreased your strength to "..newagi.."!")
-			ticker = 0
-			if (newagi>=1) then
-				repeat
-					player:AddAura(7471, player)
-					ticker = ((ticker)+1)
-				until (ticker==newagi)
-			end
-			speed = ((player:GetStat(1)/80))
-	
-			if (speed>0) then
-				ticker6=1
-			repeat
-				ticker6 = ((ticker6)+0.01)
-			until (ticker6>=speed)
-			player:SetSpeed(1, ticker6, true)
-			end
-			CharDBExecute("UPDATE shard_aa_points SET statpoints="..(statpointvalue+1).." WHERE playerguid="..player:GetGUIDLow().."")
-			end
-			end
+            if player:IsInCombat() then
+                player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
+            else
+                if (stat_cache[player:GetGUIDLow()][3]==0) then
+                    player:SendBroadcastMessage("This stat is at its minimum value.")
+                else
+                    stat_cache[player:GetGUIDLow()][3]      = stat_cache[player:GetGUIDLow()][3]-1
+                    statpoints_cache[player:GetGUIDLow()]   = statpoints_cache[player:GetGUIDLow()]+1
+                    CharDBExecute("UPDATE shard_stats SET agi="..(stat_cache[player:GetGUIDLow()][3]).." WHERE playerguid="..player:GetGUIDLow())
+                    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow().."")
+                    player:SendBroadcastMessage("You've decreased your agility to "..stat_cache[player:GetGUIDLow()][3].."!")
+                    local aura = player:GetAura(7471)
+                    if (aura) then
+                        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][3])
+                    end
+                    player:SetSpeed(1, 0.8+(player:GetStat(1)*0.013))
+                    init_statvalues(player)
+                end
+            end
         end
 		
         function inc_intellect(player)
-			if player:IsInCombat() then
-				player:SendBroadcastMessage("You cannot allocate stat points while in combat.")
-			else
-            statquery      = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-            statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-            stats["inte"]   = statquery:GetUInt32(3)
-			statpointvalue = statpointquery:GetUInt32(0)
-            if (statpointvalue<0) then
-                player:SendBroadcastMessage("You don't have enough stat points!")
+            if player:IsInCombat() then
+                player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
             else
-                StatNames:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
-                stats["inte"] = stats["inte"]+1
-                Inte_Value:SetText(""..stats["inte"])
-				Stat_Value:SetText(""..(statpointvalue-1))
-				CharDBExecute("UPDATE shard_stats SET inte="..stats["inte"].." WHERE playerguid="..player:GetGUIDLow())
-                statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-				stats["inte"] = statquery:GetUInt32(3)
-                StatFrame:Send(player) -- this sends the changes and clears the msgs
-                player:SendBroadcastMessage("You've increased your intellect to "..(stats["inte"]+1).."!")
-				player:AddAura(7468, player)
-				CharDBExecute("UPDATE shard_aa_points SET statpoints="..(statpointvalue-1).." WHERE playerguid="..player:GetGUIDLow().."")
+                if (statpoints_cache[player:GetGUIDLow()]<=0) then
+                    player:SendBroadcastMessage("You don't have enough stat points!")
+                else
+                    stat_cache[player:GetGUIDLow()][4]      = stat_cache[player:GetGUIDLow()][4]+1
+                    statpoints_cache[player:GetGUIDLow()]   = statpoints_cache[player:GetGUIDLow()]-1
+                    CharDBExecute("UPDATE shard_stats SET inte="..(stat_cache[player:GetGUIDLow()][4]).." WHERE playerguid="..player:GetGUIDLow())
+                    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow().."")
+                    player:SendBroadcastMessage("You've increased your intellect to "..stat_cache[player:GetGUIDLow()][4].."!")
+                    local aura = player:GetAura(7468)
+                    if (aura) then
+                        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][4])
+                    else
+                        player:AddAura(7468, player)
+                    end
+                    init_statvalues(player)
+                end
             end
-			end
         end
 		
         function dec_intellect(player)
-			if player:IsInCombat() then
-				player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
-			else
-            statquery      = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-            statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-            stats["inte"]   = statquery:GetUInt32(3)
-			if (stats["inte"]==0) then
-				player:SendBroadcastMessage("This stat is at its minimum value.")
-			else
-			local newvalue = statquery:GetUInt32(3)-1
-			statpointvalue = statpointquery:GetUInt32(0)
-            StatNames:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
-            Inte_Value:SetText(""..newvalue)
-			Stat_Value:SetText(""..(statpointvalue+1))
-			CharDBExecute("UPDATE shard_stats SET inte="..newvalue.." WHERE playerguid="..player:GetGUIDLow())
-            StatFrame:Send(player) -- this sends the changes and clears the msgs
-			player:RemoveAura(7468, player)
-            player:SendBroadcastMessage("You've decreased your intellect to "..newvalue.."!")
-			    ticker = 0
-			if (newvalue>=1) then
-				repeat
-					player:AddAura(7468, player)
-					ticker = ((ticker)+1)
-				until (ticker==newvalue)
-			end
-			CharDBExecute("UPDATE shard_aa_points SET statpoints="..(statpointvalue+1).." WHERE playerguid="..player:GetGUIDLow().."")
-			end
-			end
+            if player:IsInCombat() then
+                player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
+            else
+                if (stat_cache[player:GetGUIDLow()][4]==0) then
+                    player:SendBroadcastMessage("This stat is at its minimum value.")
+                else
+                    stat_cache[player:GetGUIDLow()][4]      = stat_cache[player:GetGUIDLow()][4]-1
+                    statpoints_cache[player:GetGUIDLow()]   = statpoints_cache[player:GetGUIDLow()]+1
+                    CharDBExecute("UPDATE shard_stats SET inte="..(stat_cache[player:GetGUIDLow()][4]).." WHERE playerguid="..player:GetGUIDLow())
+                    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow().."")
+                    player:SendBroadcastMessage("You've decreased your intellect to "..stat_cache[player:GetGUIDLow()][4].."!")
+                    local aura = player:GetAura(7468)
+                    if (aura) then
+                        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][4])
+                    end
+                    init_statvalues(player)
+                end
+            end
         end
 		
         function inc_spirit(player)
-			if player:IsInCombat() then
-				player:SendBroadcastMessage("You cannot allocate stat points while in combat.")
-			else
-            statquery      = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-            statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-            stats["spi"]   = statquery:GetUInt32(4)
-			statpointvalue = statpointquery:GetUInt32(0)
-            if (statpointvalue<0) then
-                player:SendBroadcastMessage("You don't have enough stat points!")
+            if player:IsInCombat() then
+                player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
             else
-                StatNames:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
-                stats["spi"] = stats["spi"]+1
-                Spi_Value:SetText(""..stats["spi"])
-				Stat_Value:SetText(""..(statpointvalue-1))
-				CharDBExecute("UPDATE shard_stats SET spi="..stats["spi"].." WHERE playerguid="..player:GetGUIDLow())
-                statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-				stats["spi"] = statquery:GetUInt32(4)
-                StatFrame:Send(player) -- this sends the changes and clears the msgs
-                player:SendBroadcastMessage("You've increased your spirit to "..(stats["spi"]+1).."!")
-				player:AddAura(7474, player)
-				CharDBExecute("UPDATE shard_aa_points SET statpoints="..(statpointvalue-1).." WHERE playerguid="..player:GetGUIDLow().."")
+                if (statpoints_cache[player:GetGUIDLow()]<=0) then
+                    player:SendBroadcastMessage("You don't have enough stat points!")
+                else
+                    stat_cache[player:GetGUIDLow()][5]      = stat_cache[player:GetGUIDLow()][5]+1
+                    statpoints_cache[player:GetGUIDLow()]   = statpoints_cache[player:GetGUIDLow()]-1
+                    CharDBExecute("UPDATE shard_stats SET spi="..(stat_cache[player:GetGUIDLow()][5]).." WHERE playerguid="..player:GetGUIDLow())
+                    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow().."")
+                    player:SendBroadcastMessage("You've increased your spirit to "..stat_cache[player:GetGUIDLow()][5].."!")
+                    local aura = player:GetAura(7474)
+                    if (aura) then
+                        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][5])
+                    else
+                        player:AddAura(7474, player)
+                    end
+                    init_statvalues(player)
+                end
             end
-			end
         end
 		
         function dec_spirit(player)
-			if player:IsInCombat() then
-				player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
-			else
-            statquery      = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow().."")
-            statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-            stats["spi"]   = statquery:GetUInt32(4)
-			if (stats["spi"]==0) then
-				player:SendBroadcastMessage("This stat is at its minimum value.")
-			else
-			local newvalue = statquery:GetUInt32(4)-1
-			statpointvalue = statpointquery:GetUInt32(0)
-            StatNames:Clear() -- Clear all stat frame and its childrens msgs just to be sure se only send what we mean
-            Spi_Value:SetText(""..newvalue)
-			Stat_Value:SetText(""..(statpointvalue+1))
-			CharDBExecute("UPDATE shard_stats SET spi="..newvalue.." WHERE playerguid="..player:GetGUIDLow())
-            StatFrame:Send(player) -- this sends the changes and clears the msgs
-            player:SendBroadcastMessage("You've decreased your spirit to "..newvalue.."!")
-			player:RemoveAura(7474, player)
-			    ticker = 0
-			if (newvalue>=1) then
-				repeat
-					player:AddAura(7474, player)
-					ticker = ((ticker)+1)
-				until (ticker==newvalue)
-			end
-			CharDBExecute("UPDATE shard_aa_points SET statpoints="..(statpointvalue+1).." WHERE playerguid="..player:GetGUIDLow().."")
-			end
-			end
+            if player:IsInCombat() then
+                player:SendBroadcastMessasge("You cannot allocate stat points while in combat.")
+            else
+                if (stat_cache[player:GetGUIDLow()][5]==0) then
+                    player:SendBroadcastMessage("This stat is at its minimum value.")
+                else
+                    stat_cache[player:GetGUIDLow()][5]      = stat_cache[player:GetGUIDLow()][5]-1
+                    statpoints_cache[player:GetGUIDLow()]   = statpoints_cache[player:GetGUIDLow()]+1
+                    CharDBExecute("UPDATE shard_stats SET inte="..(stat_cache[player:GetGUIDLow()][5]).." WHERE playerguid="..player:GetGUIDLow())
+                    CharDBExecute("UPDATE shard_aa_points SET statpoints="..statpoints_cache[player:GetGUIDLow()].." WHERE playerguid="..player:GetGUIDLow().."")
+                    player:SendBroadcastMessage("You've decreased your spirit to "..stat_cache[player:GetGUIDLow()][5].."!")
+                    local aura = player:GetAura(7474)
+                    if (aura) then
+                        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][5])
+                    end
+                    init_statvalues(player)
+                end
+            end
         end
        
         --Allocation Buttons
@@ -1084,7 +999,5 @@ AIO:AddInitMsg(Frame)
 AIO:AddInitMsg(TrainingFrame)
 AIO:AddInitMsg(StatFrame)
 AIO:AddInitMsg(PvPFrame)
-AIO:AddPostInitFunc(init_stats)
+AIO:AddPostInitFunc(init_statvalues)
 AIO:AddPostInitFunc(init_allocation)
-	
-RegisterPlayerEvent(3, init_stats)
