@@ -22,7 +22,6 @@ end
 --[[CACHE SHARD DATA]]
 
 Shard_ClassData = {}
-Shard_CharData	= {}
 
 function CacheClasses()
 	if (CustomClasses==true) then
@@ -46,15 +45,18 @@ function CacheClasses()
 end
 CacheClasses()
 
-function CacheCharData(playerguid)
-	if (playerguid==nil) then
-		local CharData = CharDBQuery("SELECT * FROM shard_assigned_class ORDER BY playerguid")
-		repeat
-			Shard_CharData[CharData:GetUInt32(0)] = CharData:GetUInt32(1)
-		until not CharData:NextRow()
-	end
+Shard_CharData	= {}
+
+function CacheCharacters()
+	local CharInfo = CharDBQuery("SELECT playerguid,class FROM shard_assigned_class ORDER BY playerguid")
+	cached_characters = 0
+	repeat
+		Shard_CharData[CharInfo:GetUInt32(0)] = CharInfo:GetUInt32(1)
+		cached_characters = cached_characters+1
+	until not CharInfo:NextRow()
+	print("[Shard]: Loaded "..cached_characters.." chars.")
 end
-CacheCharData()
+CacheCharacters()
 
 --[[AUTO ATTACK]]
 function auto_attack(event, player, spell)
@@ -125,22 +127,25 @@ stat_cache = {}
 statpoints_cache = {}
 stat_auras = {7464, 7471, 7477, 7468, 7474}
 function init_stats (event, player)
-    local statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow())
-    local statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
-    stat_cache[player:GetGUIDLow()] = {statquery:GetUInt32(0), statquery:GetUInt32(1), statquery:GetUInt32(2), statquery:GetUInt32(3), statquery:GetUInt32(4)}
-    statpoints_cache[player:GetGUIDLow()] = statpointquery:GetUInt32(0)
-    local ticker = 0
-    repeat
-        ticker = ticker+1
-        if (stat_cache[player:GetGUIDLow()][ticker]>0) then
-            player:AddAura(stat_auras[ticker], player)
-            local aura = player:GetAura(stat_auras[ticker])
-            aura:SetStackAmount(stat_cache[player:GetGUIDLow()][ticker])
-        end
-    until (ticker==5)
-    player:SetSpeed(1, 0.8+(player:GetStat(1)*0.013))
+	local statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow())
+	if (statquery==nil) then
+		CharDBExecute("INSERT INTO shard_stats VALUES ("..player:GetGUIDLow()..", 0, 0, 0, 0, 0);")
+		statquery = CharDBQuery("SELECT str,agi,sta,inte,spi FROM shard_stats WHERE playerguid="..player:GetGUIDLow())
+	end
+	local statpointquery = CharDBQuery("SELECT statpoints FROM shard_aa_points WHERE playerguid="..player:GetGUIDLow())
+	stat_cache[player:GetGUIDLow()] = {statquery:GetUInt32(0), statquery:GetUInt32(1), statquery:GetUInt32(2), statquery:GetUInt32(3), statquery:GetUInt32(4)}
+	statpoints_cache[player:GetGUIDLow()] = statpointquery:GetUInt32(0)
+	local ticker = 0
+	repeat
+	    ticker = ticker+1
+	    if (stat_cache[player:GetGUIDLow()][ticker]>0) then
+	        player:AddAura(stat_auras[ticker], player)
+	        local aura = player:GetAura(stat_auras[ticker])
+	        aura:SetStackAmount(stat_cache[player:GetGUIDLow()][ticker])
+	    end
+	until (ticker==5)
+	player:SetSpeed(1, 0.8+(player:GetStat(1)*0.013))
 end
-
 RegisterPlayerEvent(3, init_stats)
 
 --[[ON LOGIN]]
@@ -153,7 +158,7 @@ function On_LogIn (event, player)
 	local SecondaryClassQuery = CharDBQuery("SELECT class FROM shard_assigned_class WHERE playerguid="..player:GetGUIDLow())
 	if (CustomClasses==true) then
 		if (SecondaryClassQuery~=nil) then
-			print("[Shard]: Player '"..player:GetName().."' is assigned Secondary Class '"..shard_class_table[SecondaryClassQuery:GetUInt32(0)][2].."'")
+			print("[Shard]: Player '"..player:GetName().."' is assigned Secondary Class '"..Shard_ClassData[SecondaryClassQuery:GetUInt32(0)][2].."'")
 		else
 			if (player:GetLevel()>10) then
 				--Show Secondary Class Selection screen maybe?
