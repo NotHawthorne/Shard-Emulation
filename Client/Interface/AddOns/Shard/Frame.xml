@@ -1,0 +1,29 @@
+﻿<Ui xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.blizzard.com/wow/ui/">
+	<Script file="Frame.lua" />
+	<Frame name="CharFrame" parent="UIParent" toplevel="true" movable="true" enableMouse="true">
+		<Scripts>
+			<OnShow>
+				DisplayModel()
+			</OnShow>
+		</Scripts>
+		<Size>
+			<AbsDimension x="609" y="515" />
+		</Size>
+		<Anchors>
+			<Anchor point="CENTER">
+				<Offset x="-19" y="65" />
+			</Anchor>
+		</Anchors>
+		<Backdrop bgFile="Interface\AchievementFrame\UI-Achievement-StatsBackground" edgeFile="Interface\DialogFrame\UI-DialogBox-Border">
+			<BackgroundInsets>
+				<AbsInset left="11" right="12" top="12" bottom="11" />
+			</BackgroundInsets>
+			<TileSize>
+				<AbsValue val="200" />
+			</TileSize>
+			<EdgeSize>
+				<AbsValue val="32" />
+			</EdgeSize>
+		</Backdrop>
+	</Frame>
+</Ui>

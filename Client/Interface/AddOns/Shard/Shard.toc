@@ -1,6 +1,8 @@
-## Interface: 30300
-## Title: Shard
-## Notes: Provides additional functionality for Shard.
+## Author: NotHawthorne
 ## Dependencies: AIO
+## Interface: 30300
+## Notes: Provides additional functionality for Shard.
+## Title: Shard
+## Version: 0.6
 Shard.lua
 Shard.xml
