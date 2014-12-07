@@ -251,14 +251,20 @@ end
 RegisterPlayerEvent(13, On_LevelUp)
 
 --[[SEND ADDON INFO]]
-CacheMsg:AddBlock("SendData", Shard_ClassData, 1)
-CacheMsg:AddBlock("SendData", Shard_SpellData, 2)
-CacheMsg:AddBlock("SendData", Shard_CharData, 3)
-function Send_AddonInfo(player)
+function SendShardLoginData(player)
+	CacheMsg:AddBlock("SendData", Shard_ClassData, 1)
+	CacheMsg:AddBlock("SendData", Shard_SpellData, 2)
+	CacheMsg:AddBlock("SendData", Shard_CharData, 3)
 	CacheMsg:Send(player)
+	player:SendBroadcastMessage("[Server]: AddOn detected! Sent data.")
 end
 
-AIO:AddPostInitFunc(Send_AddonInfo)
+--[[RECIEVED ADDON INFO]]
+function ReturnData(Player, Identifier)
+	if (Identifier==1) then
+		SendShardLoginData(Player)
+	end
+end
 
 --[[COMMANDS]]
 function ShardCommands(event, player, msg, Type, lang)

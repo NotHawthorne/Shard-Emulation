@@ -1,0 +1,8 @@
+## Author: NotHawthorne
+## Dependencies: AIO, Shard
+## Interface: 30300
+## Notes: User Interface elements.
+## Title: Shard_UI
+## Version: 1.0
+Shard_UI.lua
+Shard_UI.xml

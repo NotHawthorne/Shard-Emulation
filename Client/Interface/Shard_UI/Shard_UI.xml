@@ -1,0 +1,154 @@
+﻿<Ui xmlns="http://www.blizzard.com/wow/ui/" 
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                   xsi:schemaLocation="http://www.blizzard.com/wow/ui/ 
+                   ..\..\FrameXML\UI.xsd">
+	<Frame name="Shard_CharFrame" toplevel="true" frameStrata="DIALOG" movable="true" enableMouse="true" hidden="true" parent="UIParent">
+	<Script file="Shard_UI.lua"/>
+	    <Size>
+	        <AbsDimension x="450" y="450"/>
+	    </Size>
+	   <Anchors>
+	       <Anchor point="TOPLEFT">
+	           <Offset><AbsDimension x="9" y="-90"/></Offset>
+	       </Anchor>
+	   </Anchors>
+	   <Backdrop
+	       bgFile="Interface\AchievementFrame\UI-Achievement-StatsBackground"
+	       edgeFile="Interface\DialogFrame\UI-DialogBox-Border">
+	       <BackgroundInsets>
+	           <AbsInset left="11" right="11" top="12" bottom="11"/>
+	       </BackgroundInsets>
+	       <TileSize>
+	           <AbsValue val="32"/>
+	       </TileSize>
+	       <EdgeSize>
+	           <AbsValue val="32"/>
+	       </EdgeSize>
+	   </Backdrop>
+	   <Layers>
+	       <Layer level="ARTWORK">
+	           <Texture name="Shard_CharFrame_Header" file="Interface\DialogFrame\UI-DialogBox-Header">
+	               <Size>
+	                   <AbsDimension x="400" y="64"/>
+	               </Size>
+	               <Anchors>
+	                   <Anchor point="TOP">
+	                       <Offset>
+	                           <AbsDimension x="0" y="12"/>
+	                       </Offset>
+	                   </Anchor>
+	               </Anchors>
+	            </Texture>
+	            <FontString name="Shard_CharFrame_Title" inherits="GameFontNormal" text="Name Not Set!">
+	                <Anchors>
+	                    <Anchor point="TOP" relativeTo="Shard_CharFrame_Header">
+	                        <Offset>
+	                            <AbsDimension x="0" y="-14"/>
+	                        </Offset>
+	                   </Anchor>
+	                </Anchors>
+	            </FontString>
+	        </Layer>
+	   </Layers>
+	   <Frames>
+	       <Frame name="Shard_CharFrame_Tab1" hidden="false">
+	           <Anchors>
+	               <Anchor point="TOPLEFT"/>
+	               <Anchor point="BOTTOMRIGHT"/>
+	           </Anchors>
+	           <Layers>
+	               <Layer level="ARTWORK">
+	               </Layer>
+	           </Layers>
+	           <Frames>
+					<DressUpModel name="Shard_CharModel" scale="3.5">
+						<Size>
+							<AbsDimension x="260" y="275"/>
+						</Size>
+						<Anchors>
+							<Anchor point="TOPLEFT">
+								<Offset>
+			                        <AbsDimension x="15" y="-23"/>
+								</Offset>
+							</Anchor>
+						</Anchors>
+						<Scripts>
+			                <OnLoad>
+			                	Model_OnLoad(self);
+			                </OnLoad>
+			            </Scripts>
+					</DressUpModel>
+	           </Frames> 
+	       </Frame>   
+	       <Frame name="Shard_CharFrame_Tab2" hidden="true">
+	           <Anchors>
+	               <Anchor point="TOPLEFT"/>
+	               <Anchor point="BOTTOMRIGHT"/>
+	           </Anchors>
+	           <Layers>
+	               <Layer level="ARTWORK">
+	               </Layer>
+	           </Layers>
+	           <Frames>
+	           </Frames> 
+	       </Frame>
+	       <Button name="$parentTab1" inherits="CharacterFrameTabButtonTemplate" id="1" text="Tab 1">
+	           <Anchors>
+	               <Anchor point="CENTER" relativePoint="BOTTOMLEFT">
+	                   <Offset>
+	                       <AbsDimension x="60" y="-10"/>
+	                   </Offset>
+	               </Anchor>
+	           </Anchors>
+	           <Scripts>
+	               <OnClick>
+	                   PanelTemplates_SetTab(Shard_CharFrame, 1);
+	                   Shard_CharFrame_Tab1:Show();
+	                   Shard_CharFrame_Tab2:Hide();
+	               </OnClick>
+	           </Scripts>
+	       </Button>
+	       <Button name="$parentTab2" inherits="CharacterFrameTabButtonTemplate" id="2" text="Tab 2">
+	           <Anchors>
+	               <Anchor point="LEFT" relativeTo="$parentTab1" relativePoint="RIGHT">
+	                   <Offset>
+	                       <AbsDimension x="-16" y="0"/>
+	                   </Offset>
+	               </Anchor>
+	           </Anchors>
+	           <Scripts>
+	               <OnClick>
+	                   PanelTemplates_SetTab(Shard_CharFrame, 2);
+	                   Shard_CharFrame_Tab1:Hide();
+	                   Shard_CharFrame_Tab2:Show();
+	               </OnClick>
+	           </Scripts>
+	       </Button>
+	        <Button name="Shard_CharFrame_CloseButton" inherits="UIPanelCloseButton">
+	            <Anchors>
+	                <Anchor point="TOPRIGHT">
+	                    <Offset>
+	                        <AbsDimension x="-5.5" y="-5.5"/>
+	                    </Offset>
+	                </Anchor>
+	            </Anchors>
+	        </Button>
+	    </Frames>
+	    <Scripts>
+	        <OnLoad>
+	            this.elapsed = 0;
+	            PanelTemplates_SetNumTabs(Shard_CharFrame, 2);
+	            PanelTemplates_SetTab(Shard_CharFrame, 1);
+	        </OnLoad>
+	        <OnShow>
+	            PlaySound("igCharacterInfoTab");
+	            PanelTemplates_SetTab(Shard_CharFrame, 1);
+	            myTabPage1:Show()
+	            myTabPage2:Hide()
+	        </OnShow>
+	        <OnHide>
+	            PlaySound("igCharacterInfoTab");
+	        </OnHide>
+	    </Scripts>
+	</Frame>
+</Ui>

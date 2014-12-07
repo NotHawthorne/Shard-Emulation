@@ -69,6 +69,10 @@ function BlockHandle.ServerEvent(Player, Event, EventParamsTable, ClientFuncRet)
     Script(Player, Event, EventParamsTable, ClientFuncRet)
 end
 
+function BlockHandle.RequestData(Player, Identifier)
+    ReturnData(Player, Identifier)
+end
+
 -- This restricts player's ability to request the initial UI to some set time
 local timers = {}
 local function RemoveInitTimer(eventid, playerguid)
